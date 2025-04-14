@@ -1,0 +1,29 @@
+package com.felix.QuizApp.model;
+
+import com.felix.QuizApp.enums.QuestionType;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class QuestionEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String questionText;
+    private QuestionType type; // MCQ, True/False, etc.
+
+    @ManyToOne
+    @JoinColumn(name = "quiz_id", nullable = false)
+    private QuizEntity quiz;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AnswerOption> options = new ArrayList<>();
+}
