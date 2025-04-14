@@ -29,6 +29,8 @@ public class VerificationToken {
     private LocalDateTime expiryDate;
 
 
+
+
     public VerificationToken(String token, UserEntity user, LocalDateTime expiryDate) {
         this.token=token;
         this.user=user;

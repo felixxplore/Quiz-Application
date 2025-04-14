@@ -26,4 +26,7 @@ public class QuestionEntity {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AnswerOption> options = new ArrayList<>();
+
+    private int marks;
+    private String explanation;
 }

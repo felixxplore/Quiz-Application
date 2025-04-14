@@ -13,7 +13,7 @@ public class AnswerOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String optionText;
-    private Boolean isCorrect;
+    private Boolean isAnswerCorrect;
     private Integer optionIndex;
 
     @ManyToOne

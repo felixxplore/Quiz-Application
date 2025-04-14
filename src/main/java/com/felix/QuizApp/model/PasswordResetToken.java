@@ -30,6 +30,8 @@ public class PasswordResetToken {
 
     private LocalDateTime expiryDate;
 
+    private boolean isUsed;
+
     public PasswordResetToken(String token, UserEntity user, LocalDateTime localDateTime) {
         this.token=token;
         this.user=user;

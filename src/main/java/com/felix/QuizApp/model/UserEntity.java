@@ -41,6 +41,10 @@ public class UserEntity {
     private Boolean enabled = false; // Required for Email Verification
 
     public boolean isEnabled() {
+
         return enabled;
     }
+
+
+
 }

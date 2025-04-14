@@ -30,18 +30,14 @@ public class QuizEntity {
     @Column(nullable = false)
     private DifficultyLevel difficultyLevel;
 
-//    @Column(nullable = false)
-//    private int score = 0;
+
 
     private Integer timeLimit; // In Minutes
 
 
     private String createdBy;
 
-//    @Column(nullable = false)
-//    private LocalDateTime startedAt;
 
-//    private Boolean published;
 
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
@@ -53,6 +49,14 @@ public class QuizEntity {
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<QuestionEntity> questions = new ArrayList<>();
+
+    private Boolean isPublished = false;
+    private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Integer totalMarks;
+    private Boolean isTimed;
+
 
 }
 

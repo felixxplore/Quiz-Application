@@ -45,7 +45,7 @@ public class QuestionService {
             option.setQuestion(savedQuestion);
             option.setOptionText(optionDTO.getOptionText());
             option.setOptionIndex(optionDTO.getOptionIndex());
-            option.setIsCorrect(optionDTO.getIsCorrect());
+            option.setIsAnswerCorrect(optionDTO.getIsCorrect());
             return option;
         }).collect(Collectors.toList());
 
@@ -59,7 +59,7 @@ public class QuestionService {
                 answerOptions.stream().map(option -> new AnswerOptionDTO(
                         option.getId(),
                         option.getOptionText(),
-                        option.getIsCorrect(),
+                        option.getIsAnswerCorrect(),
                         option.getOptionIndex(),
                         option.getQuestion().getId()
                 )).collect(Collectors.toList())
@@ -75,7 +75,7 @@ public class QuestionService {
                 question.getOptions().stream().map(option -> new AnswerOptionDTO(
                         option.getId(),
                         option.getOptionText(),
-                        option.getIsCorrect(),
+                        option.getIsAnswerCorrect(),
                         option.getOptionIndex(),
                        option.getQuestion().getId()
                 )).collect(Collectors.toList())
