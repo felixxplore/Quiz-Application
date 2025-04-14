@@ -35,3 +35,7 @@ build/
 
 # Ignore secret API keys
 src/main/resources/secrets/gemini-service-account.json
+
+# Ignore secrets
+src/main/resources/application.properties
+src/main/resources/gemini-service-account.json
