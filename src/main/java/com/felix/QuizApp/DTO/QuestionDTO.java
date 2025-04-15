@@ -14,7 +14,7 @@ import java.util.List;
 public class QuestionDTO {
     private Long id;
     private String questionText;
-    private QuestionType type;  // MCQ, True/False, etc.
+    private QuestionType questionType;  // MCQ, True/False, etc.
     private Long quizId;
     private List<AnswerOptionDTO> options; // Store answer options
 

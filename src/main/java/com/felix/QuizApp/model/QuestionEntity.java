@@ -18,7 +18,10 @@ public class QuestionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String questionText;
-    private QuestionType type; // MCQ, True/False, etc.
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "questionType")
+    private QuestionType questionType; // MCQ, True/False, etc.
 
     @ManyToOne
     @JoinColumn(name = "quiz_id", nullable = false)
@@ -27,6 +30,6 @@ public class QuestionEntity {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AnswerOption> options = new ArrayList<>();
 
-    private int marks;
-    private String explanation;
+//    private int marks;
+//    private String explanation;
 }

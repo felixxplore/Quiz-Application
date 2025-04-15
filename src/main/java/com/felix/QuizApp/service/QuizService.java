@@ -54,6 +54,9 @@ public class QuizService {
 
 
         QuizEntity savedQuiz= quizRepository.save(quiz);
+
+        QuizDTO.TopicDTO topicDTO = new QuizDTO.TopicDTO(topic.getId(), topic.getName());
+
         return new QuizDTO(
                 savedQuiz.getId(),
                 savedQuiz.getTitle(),
@@ -64,14 +67,36 @@ public class QuizService {
                 savedQuiz.getTopic().getId(),
                 savedQuiz.getSubtopic().getId(),
                 savedQuiz.getTopic().getName(),
-                savedQuiz.getSubtopic().getName()
+                savedQuiz.getSubtopic().getName(),
+                topicDTO
         );
     }
 
 
-    public Optional<QuizEntity> getQuizById(Long id) {
-        return quizRepository.findById(id);
+    public Optional<QuizDTO> getQuizById(Long id) {
+        return quizRepository.findById(id)
+                .map(quiz -> {
+                    QuizDTO.TopicDTO topicDTO = new QuizDTO.TopicDTO(
+                            quiz.getTopic().getId(),
+                            quiz.getTopic().getName()
+                    );
+
+                    return new QuizDTO(
+                            quiz.getId(),
+                            quiz.getTitle(),
+                            quiz.getDescription(),
+                            quiz.getDifficultyLevel(),
+                            quiz.getTimeLimit(),
+                            quiz.getCreatedBy(),
+                            quiz.getTopic().getId(),
+                            quiz.getSubtopic().getId(),
+                            quiz.getTopic().getName(),
+                            quiz.getSubtopic().getName(),
+                            topicDTO
+                    );
+                });
     }
+
 
     public List<QuizDTO> getAllQuizzes() {
         return quizRepository.findAll().stream().map(quiz-> new QuizDTO(
@@ -85,6 +110,7 @@ public class QuizService {
                 quiz.getSubtopic().getId(),
                 quiz.getTopic().getName(),
                 quiz.getSubtopic().getName()
+
         )).collect(Collectors.toList());
     }
 
@@ -96,30 +122,57 @@ public class QuizService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found with ID: " + quizId);
         }    }
 
-    public QuizEntity updateQuiz(Long id, QuizEntity updatedQuiz) {
+    public QuizDTO updateQuiz(Long id, QuizDTO updatedQuizDTO) {
         return quizRepository.findById(id).map(quiz -> {
-            // Update fields only if new values are provided
-            if (updatedQuiz.getTitle() != null) {
-                quiz.setTitle(updatedQuiz.getTitle());
+
+            // Update fields only if new values are provided in DTO
+            if (updatedQuizDTO.getTitle() != null) {
+                quiz.setTitle(updatedQuizDTO.getTitle());
             }
-            if (updatedQuiz.getDescription() != null) {
-                quiz.setDescription(updatedQuiz.getDescription());
+            if (updatedQuizDTO.getDescription() != null) {
+                quiz.setDescription(updatedQuizDTO.getDescription());
             }
-            if (updatedQuiz.getDifficultyLevel() != null) {
-                quiz.setDifficultyLevel(updatedQuiz.getDifficultyLevel());
+            if (updatedQuizDTO.getDifficultyLevel() != null) {
+                quiz.setDifficultyLevel(updatedQuizDTO.getDifficultyLevel());
             }
-            if (updatedQuiz.getTimeLimit() != null) {
-                quiz.setTimeLimit(updatedQuiz.getTimeLimit());
+            if (updatedQuizDTO.getTimeLimit() != null) {
+                quiz.setTimeLimit(updatedQuizDTO.getTimeLimit());
             }
-            if (updatedQuiz.getTopic() != null) {
-                quiz.setTopic(updatedQuiz.getTopic());
+            if (updatedQuizDTO.getTopicId() != null) {
+                topicRepository.findById(updatedQuizDTO.getTopicId()).ifPresent(quiz::setTopic);
             }
-            if (updatedQuiz.getSubtopic() != null) {
-                quiz.setSubtopic(updatedQuiz.getSubtopic());
+            if (updatedQuizDTO.getSubtopicId() != null) {
+                subtopicRepository.findById(updatedQuizDTO.getSubtopicId()).ifPresent(quiz::setSubtopic);
             }
-                quiz.setCreatedBy(updatedQuiz.getCreatedBy());
-            return quizRepository.save(quiz);
+
+            if (updatedQuizDTO.getCreatedBy() != null) {
+                quiz.setCreatedBy(updatedQuizDTO.getCreatedBy());
+            }
+
+            QuizEntity savedQuiz = quizRepository.save(quiz);
+
+            // Convert back to DTO and return
+            QuizDTO.TopicDTO topicDTO = new QuizDTO.TopicDTO(
+                    savedQuiz.getTopic().getId(),
+                    savedQuiz.getTopic().getName()
+            );
+
+            return new QuizDTO(
+                    savedQuiz.getId(),
+                    savedQuiz.getTitle(),
+                    savedQuiz.getDescription(),
+                    savedQuiz.getDifficultyLevel(),
+                    savedQuiz.getTimeLimit(),
+                    savedQuiz.getCreatedBy(),
+                    savedQuiz.getTopic().getId(),
+                    savedQuiz.getSubtopic().getId(),
+                    savedQuiz.getTopic().getName(),
+                    savedQuiz.getSubtopic().getName(),
+                    topicDTO
+            );
+
         }).orElseThrow(() -> new RuntimeException("Quiz not found with id: " + id));
     }
+
 }
 

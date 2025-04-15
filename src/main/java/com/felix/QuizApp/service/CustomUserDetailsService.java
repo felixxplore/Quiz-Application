@@ -3,6 +3,7 @@ package com.felix.QuizApp.service;
 import com.felix.QuizApp.enums.UserRole;
 import com.felix.QuizApp.model.UserEntity;
 import com.felix.QuizApp.repository.UserRepository;
+import com.felix.QuizApp.security.UserPrinciple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,8 +26,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserEntity user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPasswordHash(), getAuthorities(user.getRole()));
+        return new UserPrinciple(
+                user.getId(),
+                user.getEmail(),
+                user.getPasswordHash(),
+                getAuthorities(user.getRole())
+        );
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(UserRole role) {

@@ -22,8 +22,10 @@ public class QuizController {
     }
 
     @GetMapping("/{id}")
-    public Optional<QuizEntity> getQuizById(@PathVariable Long id) {
-        return quizService.getQuizById(id);
+    public ResponseEntity<QuizDTO> getQuizById(@PathVariable Long id) {
+        return quizService.getQuizById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/getAll")
@@ -37,7 +39,8 @@ public class QuizController {
     }
 
     @PutMapping("/{id}")
-    public QuizEntity updateQuiz(@PathVariable Long id, @RequestBody QuizEntity updatedQuiz) {
-        return quizService.updateQuiz(id, updatedQuiz);
+    public ResponseEntity<QuizDTO> updateQuiz(@PathVariable Long id, @RequestBody QuizDTO updatedQuiz) {
+        QuizDTO updated = quizService.updateQuiz(id, updatedQuiz);
+        return ResponseEntity.ok(updated);
     }
 }
