@@ -13,7 +13,15 @@ import {
   createTopic,
   createSubtopic,
   createQuiz,
+  fetchQuizzes,
+  editQuiz,
+  closeEditQuizModal,
+  publishQuiz,
+  deleteQuiz,
+  openEditQuizModal,
+  selectQuiz,
 } from "@/store/quizSlice";
+import QuestionManager from "@/UiComponent/QuestionManager";
 
 export const AdminDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,26 +29,45 @@ export const AdminDashboard: React.FC = () => {
     isTopicModalOpen,
     isSubtopicModalOpen,
     isQuizInfoModalOpen,
+    isEditQuizModalOpen,
     topics,
+    quizzes,
+    selectedQuizId,
     loading,
     error,
   } = useSelector((state: RootState) => state.quiz);
 
   useEffect(() => {
     dispatch(fetchTopics());
+    dispatch(fetchQuizzes());
   }, [dispatch]);
 
   const handleQuizInfoSave = (quizInfo: {
     title: string;
     description: string;
-    difficultyLevel: string;
+    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
     timeLimit: number;
     topicId: number;
     subtopicId: number;
   }) => {
-      dispatch(createQuiz(quizInfo));
+    dispatch(createQuiz(quizInfo));
     dispatch(closeQuizInfoModal());
   };
+
+  const handleEditQuizSave = (quizInfo: {
+    title: string;
+    description: string;
+    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+    timeLimit: number;
+    topicId: number;
+    subtopicId: number;
+  }) => {
+    if (selectedQuizId) {
+      dispatch(editQuiz({ quizId: selectedQuizId, quizInfo }));
+      dispatch(closeEditQuizModal());
+    }
+  };
+
   const handleTopicSave = (topicName: string) => {
     dispatch(createTopic(topicName));
     dispatch(closeTopicModal());
@@ -53,10 +80,38 @@ export const AdminDashboard: React.FC = () => {
     name: string;
     topicId: number;
   }) => {
-    // console.log("create subtopic : ", topicId);
     dispatch(createSubtopic({ name, topicId }));
     dispatch(closeSubtopicModal());
   };
+
+  const handleEditQuiz = (quiz: {
+    id: number;
+    title: string;
+    description: string;
+    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+    timeLimit: number;
+    topicId: number;
+    subtopicId: number;
+  }) => {
+    dispatch(
+      openEditQuizModal({
+        title: quiz.title,
+        description: quiz.description,
+        difficultyLevel: quiz.difficultyLevel,
+        timeLimit: quiz.timeLimit,
+        topicId: quiz.topicId,
+        subtopicId: quiz.subtopicId,
+      })
+    );
+    dispatch(selectQuiz(quiz.id)); // Set selectedQuizId for editing
+  };
+
+  const handleDeleteQuiz = (quizId: number) => {
+    if (window.confirm("Are you sure you want to delete this quiz?")) {
+      dispatch(deleteQuiz(quizId));
+    }
+  };
+
   return (
     <>
       <button
@@ -226,15 +281,74 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </aside>
       <div className="p-4 sm:ml-64">
-        <div className="p-4 border-2 border-gray-200 rounded-lg dark:border-gray-700 min-h-[96vh] flex items-center justify-center">
+        <div className="p-4 border-2 border-gray-200 rounded-lg dark:border-gray-700 min-h-[96vh]">
+          <h1 className="text-3xl font-bold mb-4">Quiz Management (Admin)</h1>
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4"
             onClick={() => dispatch(openQuizInfoModal())}
           >
             Create Quiz
           </button>
+
+          {/* Quiz List */}
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold mb-2">Quizzes</h2>
+            {quizzes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {quizzes.map((quiz) => (
+                  <div
+                    key={quiz.id}
+                    className="p-4 border border-gray-200 rounded"
+                  >
+                    <h3 className="text-lg font-medium">{quiz.title}</h3>
+                    <p className="text-sm text-gray-600">{quiz.description}</p>
+                    <p className="text-sm text-gray-600">
+                      Difficulty: {quiz.difficultyLevel}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Time Limit: {quiz.timeLimit} minutes
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Topic: {quiz.topicName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Subtopic: {quiz.subtopicName}
+                    </p>
+                    <div className="mt-2 space-x-2">
+                      <button
+                        onClick={() => dispatch(selectQuiz(quiz.id))}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Add Questions
+                      </button>
+                      <button
+                        onClick={() => handleEditQuiz(quiz)}
+                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuiz(quiz.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No quizzes available.</p>
+            )}
+          </div>
+
+          {/* Question Manager */}
+          {selectedQuizId && <QuestionManager />}
+
           {loading && <p className="text-gray-500">Loading...</p>}
           {error && <p className="text-red-500">Error: {error}</p>}
+
+          {/* Modals */}
           <Modal
             isOpen={isQuizInfoModalOpen}
             onClose={() => dispatch(closeQuizInfoModal())}
@@ -244,6 +358,19 @@ export const AdminDashboard: React.FC = () => {
             title="Enter Quiz Information"
             type="quizInfo"
             topics={topics}
+          />
+          <Modal
+            isOpen={isEditQuizModalOpen}
+            onClose={() => dispatch(closeEditQuizModal())}
+            onSave={handleEditQuizSave}
+            onCreateTopic={() => dispatch(openTopicModal())}
+            onCreateSubtopic={() => dispatch(openSubtopicModal())}
+            title="Edit Quiz Information"
+            type="quizInfo"
+            topics={topics}
+            initialQuizInfo={useSelector(
+              (state: RootState) => state.quiz.quizInfo
+            )}
           />
           <Modal
             isOpen={isTopicModalOpen}

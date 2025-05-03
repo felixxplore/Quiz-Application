@@ -1,5 +1,5 @@
-import api from "@/api/api";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "@/api/api";
 
 interface Subtopic {
   id: number;
@@ -12,25 +12,42 @@ interface Topic {
   subtopics: Subtopic[];
 }
 
-interface Options {
+interface Option {
+  id?: number;
   optionText: string;
-  optionIndex: number;
   isCorrect: boolean;
+  optionIndex: number;
+  questionId?: number;
 }
 
 interface Question {
-  id: number;
+  id?: number;
   questionText: string;
-  explanation: string;
-  questionType: string;
-  options: Options[];
+  explanation?: string;
+  questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
+  quizId?: number;
+  options: Option[];
+}
+
+interface Quiz {
+  id: number;
+  title: string;
+  description: string;
+  difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+  timeLimit: number;
+  createdBy: string;
+  topicId: number;
+  subtopicId: number;
+  topicName: string;
+  subtopicName: string;
+  topic: Topic | null;
 }
 
 interface QuizInfo {
   title: string;
   description: string;
-  difficultyLevel: string;
-  timeLimit: string;
+  difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+  timeLimit: number;
   topicId: number;
   subtopicId: number;
 }
@@ -39,8 +56,12 @@ interface QuizState {
   isTopicModalOpen: boolean;
   isSubtopicModalOpen: boolean;
   isQuizInfoModalOpen: boolean;
+  isEditQuizModalOpen: boolean;
   quizInfo: QuizInfo;
   topics: Topic[];
+  quizzes: Quiz[];
+  selectedQuizId: number | null;
+  questions: Question[];
   loading: boolean;
   error: string | null;
 }
@@ -49,20 +70,24 @@ const initialState: QuizState = {
   isTopicModalOpen: false,
   isSubtopicModalOpen: false,
   isQuizInfoModalOpen: false,
+  isEditQuizModalOpen: false,
   quizInfo: {
     title: "",
     description: "",
-    difficultyLevel: "Easy",
-    timeLimit: "",
+    difficultyLevel: "EASY",
+    timeLimit: 0,
     topicId: 0,
     subtopicId: 0,
   },
   topics: [],
+  quizzes: [],
+  selectedQuizId: null,
+  questions: [],
   loading: false,
   error: null,
 };
 
-// Async thunk for fetching topics (with nested subtopics)
+// Async thunk for fetching topics
 export const fetchTopics = createAsyncThunk(
   "quiz/fetchTopics",
   async (_, { rejectWithValue }) => {
@@ -77,7 +102,7 @@ export const fetchTopics = createAsyncThunk(
   }
 );
 
-// create topic
+// Async thunk for creating a topic
 export const createTopic = createAsyncThunk(
   "quiz/createTopic",
   async (name: string, { rejectWithValue }) => {
@@ -100,11 +125,9 @@ export const createSubtopic = createAsyncThunk(
     { dispatch, rejectWithValue }
   ) => {
     try {
-      const response = await api.post("/subtopics/create", {
-        name,
-        topic: { id: topicId },
-      });
+      const response = await api.post("/subtopics/create", { name, topicId });
       dispatch(fetchTopics());
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to create subtopic"
@@ -120,8 +143,8 @@ export const createQuiz = createAsyncThunk(
     quizInfo: {
       title: string;
       description: string;
-      difficultyLevel: string;
-      timeLimit: number;
+      difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+      timeLimit: string;
       topicId: number;
       subtopicId: number;
     },
@@ -138,6 +161,149 @@ export const createQuiz = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to create quiz"
+      );
+    }
+  }
+);
+
+// Async thunk for fetching all quizzes
+export const fetchQuizzes = createAsyncThunk(
+  "quiz/fetchQuizzes",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/quizzes/getAll");
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch quizzes"
+      );
+    }
+  }
+);
+
+// Async thunk for fetching questions by quiz ID
+export const fetchQuestionsByQuizId = createAsyncThunk(
+  "quiz/fetchQuestionsByQuizId",
+  async (quizId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/questions/${quizId}`);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch questions"
+      );
+    }
+  }
+);
+
+// Async thunk for adding a question
+export const addQuestion = createAsyncThunk(
+  "quiz/addQuestion",
+  async (
+    { quizId, question }: { quizId: number; question: Question },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post(`/questions/add/${quizId}`, question);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to add question"
+      );
+    }
+  }
+);
+
+// Async thunk for editing a question
+export const editQuestion = createAsyncThunk(
+  "quiz/editQuestion",
+  async (
+    { questionId, question }: { questionId: number; question: Question },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.put(`/questions/${questionId}`, question);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to edit question"
+      );
+    }
+  }
+);
+
+// Async thunk for deleting a question
+export const deleteQuestion = createAsyncThunk(
+  "quiz/deleteQuestion",
+  async (questionId: number, { rejectWithValue }) => {
+    try {
+      await api.delete(`/questions/${questionId}`);
+      return questionId;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete question"
+      );
+    }
+  }
+);
+
+// Async thunk for editing a quiz
+export const editQuiz = createAsyncThunk(
+  "quiz/editQuiz",
+  async (
+    { quizId, quizInfo }: { quizId: number; quizInfo: QuizInfo },
+    { rejectWithValue }
+  ) => {
+    try { 
+      const response = await api.put(`/quizzes/${quizId}`, {
+        ...quizInfo,
+        timeLimit: quizInfo.timeLimit || 0,
+        topicId: quizInfo.topicId || 0,
+        subtopicId: quizInfo.subtopicId || 0,
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to edit quiz"
+      );
+    }
+  }
+);
+
+// Async thunk for deleting a quiz
+export const deleteQuiz = createAsyncThunk(
+  "quiz/deleteQuiz",
+  async (quizId: number, { rejectWithValue }) => {
+    try {
+      await api.delete(`/quizzes/${quizId}`);
+      return quizId;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete quiz"
+      );
+    }
+  }
+);
+
+// Async thunk for submitting a quiz (user)
+export const submitQuiz = createAsyncThunk(
+  "quiz/submitQuiz",
+  async (
+    {
+      quizId,
+      answers,
+    }: {
+      quizId: number;
+      answers: Array<{ questionId: number; selectedOptionId: number }>;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post("/quiz/submit", { quizId, answers });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to submit quiz"
       );
     }
   }
@@ -165,6 +331,18 @@ const quizSlice = createSlice({
     closeQuizInfoModal(state) {
       state.isQuizInfoModalOpen = false;
     },
+    openEditQuizModal(state, action: { payload: QuizInfo }) {
+      state.isEditQuizModalOpen = true;
+      state.quizInfo = action.payload;
+    },
+    closeEditQuizModal(state) {
+      state.isEditQuizModalOpen = false;
+      state.quizInfo = initialState.quizInfo;
+    },
+    selectQuiz(state, action: { payload: number }) {
+      state.selectedQuizId = action.payload;
+      state.questions = []; // Reset questions when selecting a new quiz
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -179,7 +357,12 @@ const quizSlice = createSlice({
           state.quizInfo.topicId = action.payload[0].id;
           if (action.payload[0].subtopics.length > 0) {
             state.quizInfo.subtopicId = action.payload[0].subtopics[0].id;
+          } else {
+            state.quizInfo.subtopicId = 0;
           }
+        } else {
+          state.quizInfo.topicId = 0;
+          state.quizInfo.subtopicId = 0;
         }
       })
       .addCase(fetchTopics.rejected, (state, action) => {
@@ -206,6 +389,7 @@ const quizSlice = createSlice({
       })
       .addCase(createSubtopic.fulfilled, (state) => {
         state.loading = false;
+        // Do nothing; fetchTopics is dispatched in the thunk
       })
       .addCase(createSubtopic.rejected, (state, action) => {
         state.loading = false;
@@ -215,11 +399,125 @@ const quizSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(createQuiz.fulfilled, (state) => {
+      .addCase(createQuiz.fulfilled, (state, action) => {
         state.loading = false;
+        state.quizzes.push(action.payload);
         state.quizInfo = initialState.quizInfo;
       })
       .addCase(createQuiz.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchQuizzes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuizzes.fulfilled, (state, action) => {
+        state.loading = false;
+        state.quizzes = action.payload;
+      })
+      .addCase(fetchQuizzes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchQuestionsByQuizId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuestionsByQuizId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questions = action.payload;
+      })
+      .addCase(fetchQuestionsByQuizId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addQuestion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addQuestion.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questions.push(action.payload);
+      })
+      .addCase(addQuestion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(editQuestion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editQuestion.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.questions.findIndex(
+          (q) => q.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.questions[index] = action.payload;
+        }
+      })
+      .addCase(editQuestion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteQuestion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteQuestion.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questions = state.questions.filter(
+          (q) => q.id !== action.payload
+        );
+      })
+      .addCase(deleteQuestion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(editQuiz.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editQuiz.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.quizzes.findIndex(
+          (q) => q.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.quizzes[index] = action.payload;
+        }
+      })
+      .addCase(editQuiz.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteQuiz.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteQuiz.fulfilled, (state, action) => {
+        state.loading = false;
+        state.quizzes = state.quizzes.filter((q) => q.id !== action.payload);
+        if (state.selectedQuizId === action.payload) {
+          state.selectedQuizId = null;
+          state.questions = [];
+        }
+      })
+      .addCase(deleteQuiz.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(submitQuiz.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitQuiz.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedQuizId = null;
+        state.questions = [];
+      })
+      .addCase(submitQuiz.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -233,6 +531,9 @@ export const {
   closeSubtopicModal,
   openQuizInfoModal,
   closeQuizInfoModal,
+  openEditQuizModal,
+  closeEditQuizModal,
+  selectQuiz,
 } = quizSlice.actions;
 
 export default quizSlice.reducer;

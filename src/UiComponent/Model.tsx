@@ -19,8 +19,16 @@ interface ModalProps {
   onCreateSubtopic?: () => void;
   title: string;
   placeholder?: string;
-  type: "topic" | "subtopic" | "quizInfo" | "question";
+  type: "topic" | "subtopic" | "quizInfo";
   topics?: Topic[];
+  initialQuizInfo?: {
+    title: string;
+    description: string;
+    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+    timeLimit: number;
+    topicId: number;
+    subtopicId: number;
+  };
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -33,6 +41,7 @@ const Modal: React.FC<ModalProps> = ({
   placeholder,
   type,
   topics = [],
+  initialQuizInfo,
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedTopicId, setSelectedTopicId] = useState<number>(0);
@@ -40,66 +49,61 @@ const Modal: React.FC<ModalProps> = ({
     title: string;
     description: string;
     difficultyLevel: "EASY" | "MEDIUM" | "HARD";
-    timeLimit: string;
+    timeLimit: number;
     topicId: number;
     subtopicId: number;
   }>({
     title: "",
     description: "",
     difficultyLevel: "EASY",
-    timeLimit: "",
+    timeLimit: 0,
     topicId: topics.length > 0 ? topics[0].id : 0,
     subtopicId: 0,
   });
 
-  const [questionInfo, setQuestionInfo] = useState<{
-    questionText: string;
-    explanation: string;
-    questionType: "TRUE_FALSE";
-    options: { optionText: string; optionIndex: number; isCorrect: boolean }[];
-    correctOptionIndex: number | null;
-  }>({
-    questionText: "",
-    explanation: "",
-    questionType: "TRUE_FALSE",
-    options: [
-      { optionText: "Yes", optionIndex: 1, isCorrect: false },
-      { optionText: "No", optionIndex: 2, isCorrect: false },
-    ],
-    correctOptionIndex: null,
-  });
-  // Reset states when modal opens
+  // Initialize form with existing quiz data when editing
   useEffect(() => {
     if (isOpen) {
-      setInputValue("");
-      setSelectedTopicId(topics.length > 0 ? topics[0].id : 0);
-      if (type === "quizInfo") {
+      if (type === "quizInfo" && initialQuizInfo) {
+        setQuizInfo(initialQuizInfo);
+      } else if (type === "quizInfo") {
         setQuizInfo({
           title: "",
           description: "",
           difficultyLevel: "EASY",
-          timeLimit: "",
+          timeLimit: 0,
           topicId: topics.length > 0 ? topics[0].id : 0,
           subtopicId: 0,
         });
+      } else {
+        setInputValue("");
+        setSelectedTopicId(topics.length > 0 ? topics[0].id : 0);
       }
     }
-  }, [isOpen, topics, type]);
+  }, [isOpen, type, topics, initialQuizInfo]);
 
   // Update subtopicId when topicId changes
   useEffect(() => {
     const selectedTopic = topics.find((topic) => topic.id === quizInfo.topicId);
     const validSubtopics = selectedTopic?.subtopics || [];
-    const newSubtopicId = validSubtopics.length > 0 ? validSubtopics[0].id : 0;
-
-    // prevent infinite loop by only setting state if it's different
-    if (quizInfo.subtopicId !== newSubtopicId) {
+    if (validSubtopics.length > 0) {
+      // If editing, try to retain the initial subtopicId if valid
+      const currentSubtopicId =
+        initialQuizInfo?.subtopicId &&
+        validSubtopics.some((s) => s.id === initialQuizInfo.subtopicId)
+          ? initialQuizInfo.subtopicId
+          : validSubtopics[0].id;
       setQuizInfo((prev) => ({
         ...prev,
-        subtopicId: newSubtopicId,
+        subtopicId: currentSubtopicId,
+      }));
+    } else {
+      setQuizInfo((prev) => ({
+        ...prev,
+        subtopicId: 0,
       }));
     }
-  }, [quizInfo.topicId, topics]);
+  }, [quizInfo.topicId, topics, initialQuizInfo]);
 
   if (!isOpen) return null;
 
@@ -129,7 +133,7 @@ const Modal: React.FC<ModalProps> = ({
         title: "",
         description: "",
         difficultyLevel: "EASY",
-        timeLimit: "",
+        timeLimit: 0,
         topicId: topics.length > 0 ? topics[0].id : 0,
         subtopicId: 0,
       });
