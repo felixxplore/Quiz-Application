@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/api";
+import { RootState } from "./store";
 
 interface Subtopic {
   id: number;
@@ -60,6 +61,7 @@ interface QuizState {
   quizInfo: QuizInfo;
   topics: Topic[];
   quizzes: Quiz[];
+  submissions: SubmissionResult[];
   selectedQuizId: number | null;
   questions: Question[];
   loading: boolean;
@@ -83,6 +85,7 @@ const initialState: QuizState = {
   quizzes: [],
   selectedQuizId: null,
   questions: [],
+  submissions:[],
   loading: false,
   error: null,
 };
@@ -254,7 +257,7 @@ export const editQuiz = createAsyncThunk(
     { quizId, quizInfo }: { quizId: number; quizInfo: QuizInfo },
     { rejectWithValue }
   ) => {
-    try { 
+    try {
       const response = await api.put(`/quizzes/${quizId}`, {
         ...quizInfo,
         timeLimit: quizInfo.timeLimit || 0,
@@ -285,6 +288,15 @@ export const deleteQuiz = createAsyncThunk(
   }
 );
 
+export const fetchUserSubmissions = createAsyncThunk(
+  "quiz/fetchUserSubmissions",
+  async (_, { getState }) => {
+    const state = getState() as RootState;
+    const response = await api.get("/quiz/submissions");
+    console.log("come from fetch user submissions : ", response);
+    return response.data;
+  }
+);
 // Async thunk for submitting a quiz (user)
 export const submitQuiz = createAsyncThunk(
   "quiz/submitQuiz",
@@ -518,6 +530,18 @@ const quizSlice = createSlice({
         state.questions = [];
       })
       .addCase(submitQuiz.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchUserSubmissions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserSubmissions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.submissions = action.payload;
+      })
+      .addCase(fetchUserSubmissions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

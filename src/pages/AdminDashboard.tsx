@@ -1,5 +1,5 @@
 import Modal from "../UiComponent/Model";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/store/store";
 import {
@@ -16,15 +16,34 @@ import {
   fetchQuizzes,
   editQuiz,
   closeEditQuizModal,
-  publishQuiz,
   deleteQuiz,
   openEditQuizModal,
   selectQuiz,
 } from "@/store/quizSlice";
 import QuestionManager from "@/UiComponent/QuestionManager";
+import { toast, ToastContainer } from "react-toastify";
+// import "react-toastify/dist/ReactToasitfy.css";
+import { useNavigate } from "react-router-dom";
+
+interface Topic {
+  id: number;
+  name: string;
+  subtopics: { id: number; name: string }[];
+}
+
+interface Quiz {
+  id: number;
+  title: string;
+  description: string;
+  difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+  timeLimit: number;
+  topicName: string;
+  subtopicName: string;
+}
 
 export const AdminDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const {
     isTopicModalOpen,
     isSubtopicModalOpen,
@@ -35,26 +54,42 @@ export const AdminDashboard: React.FC = () => {
     selectedQuizId,
     loading,
     error,
+    quizInfo,
   } = useSelector((state: RootState) => state.quiz);
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   useEffect(() => {
-    dispatch(fetchTopics());
     dispatch(fetchQuizzes());
+    dispatch(fetchTopics());
   }, [dispatch]);
 
-  const handleQuizInfoSave = (quizInfo: {
-    title: string;
-    description: string;
-    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
-    timeLimit: number;
-    topicId: number;
-    subtopicId: number;
-  }) => {
-    dispatch(createQuiz(quizInfo));
-    dispatch(closeQuizInfoModal());
+  // * Handle topic save
+  const handleTopicSave = async (topicName: string) => {
+    try {
+      await dispatch(createTopic(topicName)).unwrap();
+      dispatch(closeTopicModal());
+      toast.success("Topic created successfully!");
+    } catch (error) {
+      console.log("error come from handleTopicSave : ", error);
+      toast.error("Failed to create topic");
+    }
   };
 
-  const handleEditQuizSave = (quizInfo: {
+  //* handle subtopic save
+  const handleSubtopicSave = async (subtopicName: string, topicId: number) => {
+    try {
+      await dispatch(createSubtopic({ name: subtopicName, topicId })).unwrap();
+      dispatch(closeSubtopicModal());
+      toast.success("Subtopic create succesfully!");
+    } catch (error) {
+      console.log("error come from handleSubtopicSave : ", error);
+      toast.error("failed to create subtopic");
+    }
+  };
+
+  //* handle quizInfo save
+  const handleQuizInfoSave = async (quizInfo: {
     title: string;
     description: string;
     difficultyLevel: "EASY" | "MEDIUM" | "HARD";
@@ -62,291 +97,365 @@ export const AdminDashboard: React.FC = () => {
     topicId: number;
     subtopicId: number;
   }) => {
-    if (selectedQuizId) {
-      dispatch(editQuiz({ quizId: selectedQuizId, quizInfo }));
+    try {
+      await dispatch(createQuiz(quizInfo)).unwrap();
+      dispatch(closeQuizInfoModal());
+      toast.success("Quiz create successfully!");
+    } catch (error) {
+      console.log("error come from handle quizInfo save : ", error);
+      toast.error("Failed to create quiz");
+    }
+  };
+
+  //* handle edit quiz save
+  const handleEditQuizSave = async (
+    quizId: number,
+    quizInfo: {
+      title: string;
+      description: string;
+      difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+      timeLimit: number;
+      topicId: number;
+      subtopicId: number;
+    }
+  ) => {
+    try {
+      await dispatch(editQuiz({ quizId, quizInfo })).unwrap();
       dispatch(closeEditQuizModal());
+      toast.success("Quiz updated successfully!");
+    } catch (error) {
+      console.log("error come from handleEditQuizSave : ", error);
+      toast.error("Failed to update quiz");
     }
   };
 
-  const handleTopicSave = (topicName: string) => {
-    dispatch(createTopic(topicName));
-    dispatch(closeTopicModal());
-  };
+  // const handleEditQuiz = (quiz: {
+  //   id: number;
+  //   title: string;
+  //   description: string;
+  //   difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+  //   timeLimit: number;
+  //   topicId: number;
+  //   subtopicId: number;
+  // }) => {
+  //   dispatch(
+  //     openEditQuizModal({
+  //       title: quiz.title,
+  //       description: quiz.description,
+  //       difficultyLevel: quiz.difficultyLevel,
+  //       timeLimit: quiz.timeLimit,
+  //       topicId: quiz.topicId,
+  //       subtopicId: quiz.subtopicId,
+  //     })
+  //   );
+  //   dispatch(selectQuiz(quiz.id)); // Set selectedQuizId for editing
+  // };
 
-  const handleSubtopicSave = ({
-    name,
-    topicId,
-  }: {
-    name: string;
-    topicId: number;
-  }) => {
-    dispatch(createSubtopic({ name, topicId }));
-    dispatch(closeSubtopicModal());
-  };
-
-  const handleEditQuiz = (quiz: {
-    id: number;
-    title: string;
-    description: string;
-    difficultyLevel: "EASY" | "MEDIUM" | "HARD";
-    timeLimit: number;
-    topicId: number;
-    subtopicId: number;
-  }) => {
-    dispatch(
-      openEditQuizModal({
-        title: quiz.title,
-        description: quiz.description,
-        difficultyLevel: quiz.difficultyLevel,
-        timeLimit: quiz.timeLimit,
-        topicId: quiz.topicId,
-        subtopicId: quiz.subtopicId,
-      })
-    );
-    dispatch(selectQuiz(quiz.id)); // Set selectedQuizId for editing
-  };
-
-  const handleDeleteQuiz = (quizId: number) => {
-    if (window.confirm("Are you sure you want to delete this quiz?")) {
-      dispatch(deleteQuiz(quizId));
+  //* handle delete quiz
+  const handleDeleteQuiz = async (quizId: number) => {
+    try {
+      if (window.confirm("Are you sure you want to delete this quiz?")) {
+        await dispatch(deleteQuiz(quizId));
+        toast.success("Quiz deleted successfully!");
+      }
+    } catch (error) {
+      console.log("error from handleDeleteQuiz : ", error);
+      toast.error("Failed to delete quiz");
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.info("Logged out successfully!");
+    navigate("/login");
   };
 
   return (
     <>
-      <button
-        data-drawer-target="default-sidebar"
-        data-drawer-toggle="default-sidebar"
-        aria-controls="default-sidebar"
-        type="button"
-        className="bg-black inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 bg-black"
-      >
-        <span className="sr-only">Open sidebar</span>
-        <svg
-          className="w-6 h-6"
-          aria-hidden="true"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            fillRule="evenodd"
-            d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
-          />
-        </svg>
-      </button>
-      <aside
-        id="default-sidebar"
-        className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
-        aria-label="Sidebar"
-      >
-        <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
-          <ul className="space-y-2 font-medium">
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+      <div className="flex flex-col h-screen bg-gray-100">
+        {/* Navigation Bar */}
+        <header className="bg-white shadow sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <button
+                className="md:hidden p-2 rounded-md hover:bg-gray-200"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 22 21"
-                >
-                  <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
-                  <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
-                </svg>
-                <span className="ms-3">Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 18 18"
-                >
-                  <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z" />
-                </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Kanban</span>
-                <span className="inline-flex items-center justify-center px-2 ms-3 text-sm font-medium text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
-                  Pro
-                </span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="m17.418 3.623-.018-.008a6.713 6.713 0 0 0-2.4-.569V2h1a1 1 0 1 0 0-2h-2a1 1 0 0 0-1 1v2H9.89A6.977 6.977 0 0 1 12 8v5h-2V8A5 5 0 1 0 0 8v6a1 1 0 0 0 1 1h8v4a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-4h6a1 1 0 0 0 1-1V8a5 5 0 0 0-2.582-4.377ZM6 12H4a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Z" />
-                </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Inbox</span>
-                <span className="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                  3
-                </span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 18"
-                >
-                  <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
-                </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Users</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 18 20"
-                >
-                  <path d="M17 5.923A1 1 0 0 0 16 5h-3V4a4 4 0 1 0-8 0v1H2a1 1 0 0 0-1 .923L.086 17.846A2 2 0 0 0 2.08 20h13.84a2 2 0 0 0 1.994-2.153L17 5.923ZM7 9a1 1 0 0 1-2 0V7h2v2Zm0-5a2 2 0 1 1 4 0v1H7V4Zm6 5a1 1 0 1 1-2 0V7h2v2Z" />
-                </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Products</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6 text-gray-600"
                   fill="none"
-                  viewBox="0 0 18 16"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16m-7 6h7"
                   />
                 </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Sign In</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
+              </button>
+              <h1 className="text-xl font-bold text-gray-900 ml-2">
+                Quiz Admin
+              </h1>
+            </div>
+            <div className="relative">
+              <button className="flex items-center text-gray-600 hover:text-gray-900">
+                Admin
                 <svg
-                  className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                  aria-hidden="true"
+                  className="ml-2 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
                 >
-                  <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.96 2.96 0 0 0 .13 5H5Z" />
-                  <path d="M6.737 11.061a2.961 2.961 0 0 1 .81-1.515l6.117-6.116A4.839 4.839 0 0 1 16 2.141V2a1.97 1.97 0 0 0-1.933-2H7v5a2 2 0 0 1-2 2H0v11a1.969 1.969 0 0 0 1.933 2h12.134A1.97 1.97 0 0 0 16 18v-3.093l-1.546 1.546c-.413.413-.94.695-1.513.81l-3.4.679a2.947 2.947 0 0 1-1.85-.227 2.96 2.96 0 0 1-1.635-3.257l.681-3.397Z" />
-                  <path d="M8.961 16a.93.93 0 0 0 .189-.019l3.4-.679a.961.961 0 0 0 .49-.263l6.118-6.117a2.884 2.884 0 0 0-4.079-4.078l-6.117 6.117a.96.96 0 0 0-.263.491l-.679 3.4A.961.961 0 0 0 8.961 16Zm7.477-9.8a.958.958 0 0 1 .68-.281.961.961 0 0 1 .682 1.644l-.315.315-1.36-1.36.313-.318Zm-5.911 5.911 4.236-4.236 1.359 1.359-4.236 4.237-1.7.339.341-1.699Z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
-                <span className="flex-1 ms-3 whitespace-nowrap">Sign Up</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </aside>
-      <div className="p-4 sm:ml-64">
-        <div className="p-4 border-2 border-gray-200 rounded-lg dark:border-gray-700 min-h-[96vh]">
-          <h1 className="text-3xl font-bold mb-4">Quiz Management (Admin)</h1>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4"
-            onClick={() => dispatch(openQuizInfoModal())}
-          >
-            Create Quiz
-          </button>
-
-          {/* Quiz List */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2">Quizzes</h2>
-            {quizzes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quizzes.map((quiz) => (
-                  <div
-                    key={quiz.id}
-                    className="p-4 border border-gray-200 rounded"
-                  >
-                    <h3 className="text-lg font-medium">{quiz.title}</h3>
-                    <p className="text-sm text-gray-600">{quiz.description}</p>
-                    <p className="text-sm text-gray-600">
-                      Difficulty: {quiz.difficultyLevel}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Time Limit: {quiz.timeLimit} minutes
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Topic: {quiz.topicName}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Subtopic: {quiz.subtopicName}
-                    </p>
-                    <div className="mt-2 space-x-2">
-                      <button
-                        onClick={() => dispatch(selectQuiz(quiz.id))}
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        Add Questions
-                      </button>
-                      <button
-                        onClick={() => handleEditQuiz(quiz)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteQuiz(quiz.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
               </div>
-            ) : (
-              <p className="text-gray-500">No quizzes available.</p>
-            )}
+            </div>
           </div>
+        </header>
 
-          {/* Question Manager */}
-          {selectedQuizId && <QuestionManager />}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <aside
+            className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-800 text-white transition-transform md:translate-x-0 ${
+              sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div className="p-4">
+              <h2 className="text-lg font-semibold">Admin Dashboard</h2>
+            </div>
+            <nav className="px-3 py-4">
+              <ul className="space-y-2">
+                <li>
+                  <button
+                    className={`w-full flex items-center p-2 rounded-md ${
+                      selectedQuizId === null
+                        ? "bg-gray-700"
+                        : "hover:bg-gray-700"
+                    }`}
+                    onClick={() => dispatch(selectQuiz(null))}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" />
+                    </svg>
+                    Quizzes
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className={`w-full flex items-center p-2 rounded-md ${
+                      selectedQuizId !== null
+                        ? "bg-gray-700"
+                        : "hover:bg-gray-700 opacity-50 cursor-not-allowed"
+                    }`}
+                    onClick={() => {
+                      if (selectedQuizId === null)
+                        toast.warn("Please select a quiz first");
+                    }}
+                    disabled={selectedQuizId === null}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1zm.293 7.707a1 1 0 00-1.414-1.414L10 12.586l-1.293-1.293a1 1 0 00-1.414 1.414L8.586 14l-1.293 1.293a1 1 0 001.414 1.414L10 15.414l1.293 1.293a1 1 0 001.414-1.414L11.414 14l1.293-1.293z" />
+                    </svg>
+                    Questions
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="w-full flex items-center p-2 rounded-md hover:bg-gray-700"
+                    onClick={() => dispatch(openTopicModal())}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm9 4V5H4v4h2V8a1 1 0 011-1h3a1 1 0 011 1v1zm-1 5a2 2 0 002-2v-1h1a2 2 0 002 2v2.5a2.5 2.5 0 01-2.5 2.5h-7a2.5 2.5 0 01-2.5-2.5V14h2v1.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V14z" />
+                    </svg>
+                    Create Topic
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="w-full flex items-center p-2 rounded-md hover:bg-gray-700"
+                    onClick={() => dispatch(openSubtopicModal())}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" />
+                    </svg>
+                    Create Subtopic
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="w-full flex items-center p-2 rounded-md hover:bg-gray-700"
+                    onClick={handleLogout}
+                  >
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    Logout
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </aside>
 
-          {loading && <p className="text-gray-500">Loading...</p>}
-          {error && <p className="text-red-500">Error: {error}</p>}
+          {/* Main Content */}
+          <main className="flex-1 p-4 md:ml-64 bg-gray-100">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Quiz Management
+                </h1>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                  onClick={() => dispatch(openQuizInfoModal())}
+                >
+                  Create Quiz
+                </button>
+              </div>
+
+              {/* Quiz List */}
+              {selectedQuizId === null ? (
+                <div>
+                  {loading && (
+                    <div className="flex justify-center">
+                      <svg
+                        className="animate-spin h-8 w-8 text-blue-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  {error && (
+                    <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4">
+                      Error: {error}
+                    </div>
+                  )}
+                  {quizzes.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {quizzes.map((quiz: Quiz) => (
+                        <div
+                          key={quiz.id}
+                          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                        >
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {quiz.title}
+                          </h3>
+                          <p className="text-gray-600 mt-1">
+                            {quiz.description}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Difficulty: {quiz.difficultyLevel}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Time Limit: {quiz.timeLimit} minutes
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Topic: {quiz.topicName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Subtopic: {quiz.subtopicName}
+                          </p>
+                          <div className="mt-4 flex space-x-2">
+                            <button
+                              className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                              onClick={() => dispatch(selectQuiz(quiz.id))}
+                            >
+                              Add Questions
+                            </button>
+                            <button
+                              className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
+                              onClick={() => handleEditQuiz(quiz)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                              onClick={() => handleDeleteQuiz(quiz.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No quizzes available.</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <button
+                    className="mb-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition"
+                    onClick={() => dispatch(selectQuiz(null))}
+                  >
+                    Back to Quizzes
+                  </button>
+                  <QuestionManager quizId={selectedQuizId} />
+                </div>
+              )}
+            </div>
+          </main>
 
           {/* Modals */}
           <Modal
@@ -362,15 +471,13 @@ export const AdminDashboard: React.FC = () => {
           <Modal
             isOpen={isEditQuizModalOpen}
             onClose={() => dispatch(closeEditQuizModal())}
-            onSave={handleEditQuizSave}
+            onSave={(data) => handleEditQuizSave(selectedQuizId!, data)}
             onCreateTopic={() => dispatch(openTopicModal())}
             onCreateSubtopic={() => dispatch(openSubtopicModal())}
             title="Edit Quiz Information"
             type="quizInfo"
             topics={topics}
-            initialQuizInfo={useSelector(
-              (state: RootState) => state.quiz.quizInfo
-            )}
+            initialQuizInfo={quizInfo}
           />
           <Modal
             isOpen={isTopicModalOpen}
@@ -389,6 +496,8 @@ export const AdminDashboard: React.FC = () => {
             type="subtopic"
             topics={topics}
           />
+
+          <ToastContainer position="bottom-right" />
         </div>
       </div>
     </>

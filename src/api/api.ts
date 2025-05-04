@@ -12,7 +12,7 @@ api.interceptors.request.use(
   (config) => {
     // const token = localStorage.getItem("token");
     const token =
-      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMkBnbWFpbC5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc0NjI2OTAzMywiZXhwIjoxNzQ2MzU1NDMzfQ.cBWNEtFWQTK36V5LUo2CcoHAKG342xl_o05P6pEukIg";
+      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyM0BnbWFpbC5jb20iLCJyb2xlIjoiUVVJWl9DUkVBVE9SIiwiaWF0IjoxNzQ2MzYxNTE1LCJleHAiOjE3NDY0NDc5MTV9.G5CeXJnrzWKWm4PXQnhdy9wW0PDk5u6_MD-6s3bgVsQ";
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
