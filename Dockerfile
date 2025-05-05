@@ -6,6 +6,10 @@ WORKDIR /QuizApp-0.0.1-SNAPSHOT
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
 
+# Set execute permission for the mvnw script
+RUN chmod +x mvnw
+
+
 # Download dependencies
 RUN ./mvnw dependency:go-offline
 
