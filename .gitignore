@@ -20,5 +20,4 @@ application.properties
 .DS_Store
 Thumbs.db
 
-src/main/resources/gemini-service-account.json
 
