@@ -51,6 +51,7 @@ interface QuizInfo {
   timeLimit: number;
   topicId: number;
   subtopicId: number;
+  id: number;
 }
 
 interface QuizState {
@@ -80,6 +81,7 @@ const initialState: QuizState = {
     timeLimit: 0,
     topicId: 0,
     subtopicId: 0,
+    id: 0,
   },
   topics: [],
   quizzes: [],
@@ -99,7 +101,7 @@ export const fetchTopics = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch topics"
+        error.response?.data || "Failed to fetch topics"
       );
     }
   }
@@ -111,11 +113,11 @@ export const createTopic = createAsyncThunk(
   async (name: string, { rejectWithValue }) => {
     try {
       const response = await api.post("/topics/create", { name });
+      console.log("CreateTopic : ", response);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create topic"
-      );
+      console.log("TopicCreate : ", error);
+      return rejectWithValue(error.response?.data || "Failed to create topic");
     }
   }
 );
@@ -128,12 +130,16 @@ export const createSubtopic = createAsyncThunk(
     { dispatch, rejectWithValue }
   ) => {
     try {
-      const response = await api.post("/subtopics/create", { name, topicId });
+      const response = await api.post("/subtopics/create", {
+        name,
+        topic: { id: topicId },
+      });
       dispatch(fetchTopics());
       return response.data;
     } catch (error: any) {
+      console.log(error);
       return rejectWithValue(
-        error.response?.data?.message || "Failed to create subtopic"
+        error.response?.data  || "Failed to create subtopic"
       );
     }
   }
@@ -150,6 +156,7 @@ export const createQuiz = createAsyncThunk(
       timeLimit: string;
       topicId: number;
       subtopicId: number;
+      id: number;
     },
     { rejectWithValue }
   ) => {
@@ -163,7 +170,7 @@ export const createQuiz = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to create quiz"
+        error.response?.data || "Failed to create quiz"
       );
     }
   }
@@ -175,10 +182,11 @@ export const fetchQuizzes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/quizzes/getAll");
+      console.log("fetch quiz : ", response);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch quizzes"
+        error.response?.data  || "Failed to fetch quizzes"
       );
     }
   }
@@ -193,7 +201,7 @@ export const fetchQuestionsByQuizId = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch questions"
+        error.response?.data  || "Failed to fetch questions"
       );
     }
   }
@@ -211,7 +219,7 @@ export const addQuestion = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to add question"
+        error.response?.data  || "Failed to add question"
       );
     }
   }
@@ -229,7 +237,7 @@ export const editQuestion = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to edit question"
+        error.response?.data  || "Failed to edit question"
       );
     }
   }
@@ -267,7 +275,7 @@ export const editQuiz = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to edit quiz"
+        error.response?.data|| "Failed to edit quiz"
       );
     }
   }
@@ -282,7 +290,7 @@ export const deleteQuiz = createAsyncThunk(
       return quizId;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to delete quiz"
+        error.response?.data  || "Failed to delete quiz"
       );
     }
   }

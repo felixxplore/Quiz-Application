@@ -1,10 +1,11 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import UserQuiz from "./UiComponent/UserQuiz";
 import ProtectedRoute from "./UiComponent/ProtectedRoute";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute element={<App />} allowedRole="QUIZ_CREATOR" />
+              <ProtectedRoute element={<AdminDashboard />} allowedRole="QUIZ_CREATOR" />
             }
           />
         </Routes>

@@ -7,6 +7,7 @@ import {
   deleteQuestion,
   fetchQuestionsByQuizId,
 } from "@/store/quizSlice";
+import { toast, ToastContainer } from "react-toastify";
 
 interface Option {
   optionText: string;
@@ -17,7 +18,7 @@ interface Option {
 interface Question {
   id?: number;
   questionText: string;
-  explanation?: string;
+  // explanation?: string;
   questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
   options: Option[];
 }
@@ -30,7 +31,7 @@ const QuestionManager: React.FC = () => {
 
   const [questionForm, setQuestionForm] = useState<Question>({
     questionText: "",
-    explanation: "",
+    // explanation: "",
     questionType: "FILL_BLANK",
     options: [],
   });
@@ -136,16 +137,18 @@ const QuestionManager: React.FC = () => {
 
     setQuestionForm({
       questionText: "",
-      explanation: "",
+      // explanation: "",
       questionType: "FILL_BLANK",
       options: [],
     });
   };
 
   const handleEdit = (question: Question) => {
+    console.log("Question : ", question);
+    // return;
     setQuestionForm({
       ...question,
-      explanation: question.explanation || "",
+      // explanation: question.explanation || "",
       options: question.options.map((opt) => ({
         optionText: opt.optionText,
         isCorrect: opt.isCorrect,
@@ -157,7 +160,12 @@ const QuestionManager: React.FC = () => {
 
   const handleDelete = (questionId: number) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
-      dispatch(deleteQuestion(questionId));
+      try {
+        dispatch(deleteQuestion(questionId)).unwrap();
+        toast.success("deleted successfully.");
+      } catch (err) {
+        toast.error(err);
+      }
     }
   };
 
@@ -165,6 +173,31 @@ const QuestionManager: React.FC = () => {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg max-w-3xl mx-auto">
+      {loading && (
+        <div className="flex justify-center mb-4">
+          <svg
+            className="animate-spin h-8 w-8 text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z"
+            />
+          </svg>
+        </div>
+      )}
+
       <h2 className="text-2xl font-semibold mb-4">
         Manage Questions for Quiz ID: {selectedQuizId}
       </h2>
@@ -189,7 +222,7 @@ const QuestionManager: React.FC = () => {
             required
           />
         </div>
-        <div>
+        {/* <div>
           <label
             htmlFor="explanation"
             className="block text-sm font-medium text-gray-700"
@@ -204,7 +237,7 @@ const QuestionManager: React.FC = () => {
             placeholder="Enter explanation"
             className="w-full p-2 border border-gray-300 rounded mt-1"
           />
-        </div>
+        </div> */}
         <div>
           <label
             htmlFor="questionType"
@@ -273,6 +306,9 @@ const QuestionManager: React.FC = () => {
               className="p-4 border border-gray-200 rounded mb-2"
             >
               <p className="font-medium">{question.questionText}</p>
+              {/* <p className="text-sm text-gray-600">
+                explanation: {question.explanation}
+              </p> */}
               <p className="text-sm text-gray-600">
                 Type: {question.questionType}
               </p>
@@ -315,6 +351,7 @@ const QuestionManager: React.FC = () => {
       )}
 
       {error && <p className="text-red-500 mt-2">Error: {error}</p>}
+      <ToastContainer />
     </div>
   );
 };
