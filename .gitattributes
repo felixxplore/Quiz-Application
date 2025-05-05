@@ -1,4 +1,34 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
-.env
+# Maven
+/target
+!.mvn/wrapper/maven-wrapper.jar
+**/logs/
+*.log
 
+# Eclipse
+*.classpath
+*.project
+*.settings/
+.apt_generated
+.factorypath
+
+# IntelliJ IDEA
+*.iml
+.idea/
+out/
+
+# VS Code
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Env & Secrets
+.env
+application.properties
+
+# Other
+*.swp
+*.bak
+*.tmp
+*.orig

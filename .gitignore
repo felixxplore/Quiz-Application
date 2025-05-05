@@ -1,41 +1,21 @@
-HELP.md
+# Java
 target/
+*.class
+*.jar
+*.war
+
+# Maven
+log/
+logs/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+.mvn/
+.settings/
+.idea/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Environment config
+.env
+application.properties
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-
-# Ignore secret API keys
-src/main/resources/secrets/gemini-service-account.json
-
-# Ignore secrets
-src/main/resources/application.properties
-src/main/resources/gemini-service-account.json
+# OS
+.DS_Store
+Thumbs.db
