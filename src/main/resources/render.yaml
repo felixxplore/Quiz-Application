@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: spring-boot-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean install
+    startCommand: java -jar target/QuizAppApplication.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
