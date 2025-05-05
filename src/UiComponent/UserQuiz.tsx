@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { logout } from "@/store/authSlice";
 
 interface Option {
   id: number;
@@ -52,6 +53,8 @@ const UserQuiz: React.FC = () => {
     (state: RootState) => state.quiz
   );
 
+  const { user, token } = useSelector((state: RootState) => state.auth);
+
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [answers, setAnswers] = useState<{ [questionId: number]: number }>({});
@@ -68,15 +71,15 @@ const UserQuiz: React.FC = () => {
   useEffect(() => {
     dispatch(fetchQuizzes());
     dispatch(fetchUserSubmissions());
-    if (activeView === "results") {
-      dispatch(fetchUserSubmissions()).then((result) => {
-        if (fetchUserSubmissions.fulfilled.match(result)) {
-          toast.success("Submission history loaded!");
-        } else {
-          toast.error("Failed to load submission history");
-        }
-      });
-    }
+    // if (activeView === "results") {
+    //   dispatch(fetchUserSubmissions()).then((result) => {
+    //     if (fetchUserSubmissions.fulfilled.match(result)) {
+    //       toast.success("Submission history loaded!");
+    //     } else {
+    //       toast.error("Failed to load submission history");
+    //     }
+    //   });
+    // }
   }, [dispatch, activeView]);
 
   // Timer logic
@@ -167,7 +170,7 @@ const UserQuiz: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    dispatch(logout());
     toast.info("Logged out successfully!");
     navigate("/login");
   };
@@ -180,7 +183,6 @@ const UserQuiz: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      {/* Navigation Bar */}
       <header className="bg-white shadow sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
@@ -205,46 +207,61 @@ const UserQuiz: React.FC = () => {
             </button>
             <h1 className="text-xl font-bold text-gray-900 ml-2">Quiz App</h1>
           </div>
-          <div className="relative group">
-            <button className="flex items-center text-gray-600 hover:text-gray-900">
-              User
-              <svg
-                className="ml-2 w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block">
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                Logout
-              </button>
-            </div>
+          <div className="flex items-center space-x-4">
+            <a href="/" className="text-gray-600 hover:text-gray-900">
+              Home
+            </a>
+            {user && token ? (
+              <div className="relative group">
+                <button className="flex items-center text-gray-600 hover:text-gray-900">
+                  {user.name}
+                  <svg
+                    className="ml-2 w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <a href="/signup" className="text-gray-600 hover:text-gray-900">
+                  Sign Up
+                </a>
+                <a href="/login" className="text-gray-600 hover:text-gray-900">
+                  Login
+                </a>
+              </>
+            )}
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Overlay for mobile sidebar */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
-        {/* Sidebar */}
         <aside
+          ref={sidebarRef}
           className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-800 text-white transition-transform md:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
@@ -261,7 +278,10 @@ const UserQuiz: React.FC = () => {
                       ? "bg-gray-700"
                       : "hover:bg-gray-700"
                   }`}
-                  onClick={() => setActiveView("quizzes")}
+                  onClick={() => {
+                    setActiveView("quizzes");
+                    setSidebarOpen(false);
+                  }}
                 >
                   <svg
                     className="w-5 h-5 mr-3"
@@ -300,7 +320,10 @@ const UserQuiz: React.FC = () => {
               <li>
                 <button
                   className="w-full flex items-center p-2 rounded-md hover:bg-gray-700"
-                  onClick={handleLogout}
+                  onClick={() => {
+                    handleLogout();
+                    setSidebarOpen(false);
+                  }}
                 >
                   <svg
                     className="w-5 h-5 mr-3"
@@ -323,7 +346,6 @@ const UserQuiz: React.FC = () => {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-4 md:ml-64 bg-gray-100">
           <div className="max-w-7xl mx-auto">
             {submissionResult ? (

@@ -85,7 +85,7 @@ const initialState: QuizState = {
   quizzes: [],
   selectedQuizId: null,
   questions: [],
-  submissions:[],
+  submissions: [],
   loading: false,
   error: null,
 };

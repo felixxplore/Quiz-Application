@@ -1,30 +1,32 @@
 import "./App.css";
-import AdminDashboard from "./pages/AdminDashboard";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 import UserQuiz from "./UiComponent/UserQuiz";
+import ProtectedRoute from "./UiComponent/ProtectedRoute";
 
 function App() {
   return (
     <>
-      {/* <div className="flex flex-col items-center justify-center min-h-svh">
-      <Button>Click me</Button>
-    </div> */}
-
       <Router>
-        <div className="p-4 bg-gray-100 min-h-screen">
-          <nav className="mb-4">
-            <Link to="/" className="mr-4 text-blue-600 hover:underline">
-              Admin Dashboard
-            </Link>
-            <Link to="/user" className="text-blue-600 hover:underline">
-              User Quiz
-            </Link>
-          </nav>
-          <Routes>
-            <Route path="/" element={<AdminDashboard />} />
-            <Route path="/user" element={<UserQuiz />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/user"
+            element={
+              <ProtectedRoute element={<UserQuiz />} allowedRole="USER" />
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute element={<App />} allowedRole="QUIZ_CREATOR" />
+            }
+          />
+        </Routes>
       </Router>
     </>
   );
