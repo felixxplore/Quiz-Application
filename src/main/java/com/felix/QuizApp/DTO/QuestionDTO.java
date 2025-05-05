@@ -18,6 +18,5 @@ public class QuestionDTO {
     private Long quizId;
     private List<AnswerOptionDTO> options; // Store answer options
 
-
 }
 

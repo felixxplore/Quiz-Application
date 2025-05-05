@@ -30,12 +30,12 @@ public class QuizService {
     @Autowired
     private final SubtopicRepository subtopicRepository;
 
-
     @Autowired
     private final AuthService authService;
+
     public QuizDTO createQuiz(QuizDTO quizDTO) {
 
-        UserEntity currentUser = authService.getLoggedInUser();
+//        UserEntity currentUser = authService.getLoggedInUser();
 
         TopicEntity topic = topicRepository.findById(quizDTO.getTopicId())
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
@@ -47,7 +47,7 @@ public class QuizService {
         quiz.setDescription(quizDTO.getDescription());
         quiz.setDifficultyLevel(quizDTO.getDifficultyLevel());
         quiz.setTimeLimit(quizDTO.getTimeLimit());
-        quiz.setCreatedBy(currentUser.getName());
+        quiz.setCreatedBy("ADMIN");
         quiz.setTopic(topic);
         quiz.setSubtopic(subtopic);
 
@@ -63,7 +63,8 @@ public class QuizService {
                 savedQuiz.getDescription(),
                 savedQuiz.getDifficultyLevel(),
                 savedQuiz.getTimeLimit(),
-                currentUser.getName(),
+//                currentUser.getName(),
+                "ADMIN",
                 savedQuiz.getTopic().getId(),
                 savedQuiz.getSubtopic().getId(),
                 savedQuiz.getTopic().getName(),

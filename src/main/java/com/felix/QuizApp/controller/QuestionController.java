@@ -14,7 +14,7 @@ import java.util.List;
 public class QuestionController {
     private final QuestionService questionService;
 
-    @PostMapping("/add")
+    @PostMapping("/add/{quizId}")
     public ResponseEntity<QuestionDTO> addQuestionToQuiz(
             @PathVariable Long quizId,
             @RequestBody QuestionDTO questionDTO) {

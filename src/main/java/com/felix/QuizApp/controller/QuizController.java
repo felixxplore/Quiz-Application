@@ -4,6 +4,7 @@ import com.felix.QuizApp.DTO.QuizDTO;
 import com.felix.QuizApp.model.QuizEntity;
 import com.felix.QuizApp.service.QuizService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,8 @@ import java.util.Optional;
 @RequestMapping("/api/quizzes")
 @RequiredArgsConstructor
 public class QuizController {
+
+    @Autowired
     private final QuizService quizService;
 
     @PostMapping("/create")
