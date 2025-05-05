@@ -1,8 +1,29 @@
+FROM eclipse-temurin:21-jdk-alpine AS builder
+
+WORKDIR /QuizApp-0.0.1-SNAPSHOT
+
+# Copy Maven wrapper and pom.xml
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+
+# Download dependencies
+RUN ./mvnw dependency:go-offline
+
+# Copy source code
+COPY src ./src
+
+# Build the app (skip tests to save time)
+RUN ./mvnw package -DskipTests
+
+# ---------- Step 2: Run the app ----------
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /QuizApp-0.0.1-SNAPSHOT
 
-COPY target/*.jar QuizApp-0.0.1-SNAPSHOT.jar
+
+
+COPY --from=builder /QuizApp-0.0.1-SNAPSHOT/target/*.jar QuizApp-0.0.1-SNAPSHOT.jar
+
 
 EXPOSE 8080
 
