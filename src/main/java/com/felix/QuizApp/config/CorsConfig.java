@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Allow all endpoints
-                        .allowedOrigins("http://localhost:5173") // Allow frontend URL
+                        .allowedOrigins("http://localhost:5173","https://quiz-application-o48s98zop-felixs-projects-4fc145f3.vercel.app/") // Allow frontend URL
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow these methods
                         .allowedHeaders("*") // Allow all headers
                         .allowCredentials(true); // Allow cookies/authentication
