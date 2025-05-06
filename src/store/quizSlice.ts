@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/api";
-import { RootState } from "./store";
 
 interface Subtopic {
   id: number;
@@ -62,7 +61,7 @@ interface QuizState {
   quizInfo: QuizInfo;
   topics: Topic[];
   quizzes: Quiz[];
-  submissions: SubmissionResult[];
+  submissions: [];
   selectedQuizId: number | null;
   questions: Question[];
   loading: boolean;
@@ -100,9 +99,7 @@ export const fetchTopics = createAsyncThunk(
       const response = await api.get("/topics/getAll");
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch topics"
-      );
+      return rejectWithValue(error.response?.data || "Failed to fetch topics");
     }
   }
 );
@@ -139,7 +136,7 @@ export const createSubtopic = createAsyncThunk(
     } catch (error: any) {
       console.log(error);
       return rejectWithValue(
-        error.response?.data  || "Failed to create subtopic"
+        error.response?.data || "Failed to create subtopic"
       );
     }
   }
@@ -153,7 +150,7 @@ export const createQuiz = createAsyncThunk(
       title: string;
       description: string;
       difficultyLevel: "EASY" | "MEDIUM" | "HARD";
-      timeLimit: string;
+      timeLimit: number;
       topicId: number;
       subtopicId: number;
       id: number;
@@ -169,9 +166,7 @@ export const createQuiz = createAsyncThunk(
       });
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data || "Failed to create quiz"
-      );
+      return rejectWithValue(error.response?.data || "Failed to create quiz");
     }
   }
 );
@@ -185,9 +180,7 @@ export const fetchQuizzes = createAsyncThunk(
       console.log("fetch quiz : ", response);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data  || "Failed to fetch quizzes"
-      );
+      return rejectWithValue(error.response?.data || "Failed to fetch quizzes");
     }
   }
 );
@@ -201,7 +194,7 @@ export const fetchQuestionsByQuizId = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data  || "Failed to fetch questions"
+        error.response?.data || "Failed to fetch questions"
       );
     }
   }
@@ -218,9 +211,7 @@ export const addQuestion = createAsyncThunk(
       const response = await api.post(`/questions/add/${quizId}`, question);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data  || "Failed to add question"
-      );
+      return rejectWithValue(error.response?.data || "Failed to add question");
     }
   }
 );
@@ -236,9 +227,7 @@ export const editQuestion = createAsyncThunk(
       const response = await api.put(`/questions/${questionId}`, question);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data  || "Failed to edit question"
-      );
+      return rejectWithValue(error.response?.data || "Failed to edit question");
     }
   }
 );
@@ -274,32 +263,29 @@ export const editQuiz = createAsyncThunk(
       });
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data|| "Failed to edit quiz"
-      );
+      return rejectWithValue(error.response?.data || "Failed to edit quiz");
     }
   }
 );
 
 // Async thunk for deleting a quiz
-export const deleteQuiz = createAsyncThunk(
-  "quiz/deleteQuiz",
-  async (quizId: number, { rejectWithValue }) => {
-    try {
-      await api.delete(`/quizzes/${quizId}`);
-      return quizId;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data  || "Failed to delete quiz"
-      );
-    }
+export const deleteQuiz = createAsyncThunk<
+  number, // Return type (quizId)
+  number, // Argument type (quizId)
+  { rejectValue: string } // Rejected value type
+>("quiz/deleteQuiz", async (quizId: number, { rejectWithValue }) => {
+  try {
+    await api.delete(`/quizzes/${quizId}`);
+    return quizId;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data || "Failed to delete quiz");
   }
-);
+});
 
 export const fetchUserSubmissions = createAsyncThunk(
   "quiz/fetchUserSubmissions",
-  async (_, { getState }) => {
-    const state = getState() as RootState;
+  async () => {
+    // const state = getState() as RootState;
     const response = await api.get("/quiz/submissions");
     console.log("come from fetch user submissions : ", response);
     return response.data;
@@ -359,7 +345,7 @@ const quizSlice = createSlice({
       state.isEditQuizModalOpen = false;
       state.quizInfo = initialState.quizInfo;
     },
-    selectQuiz(state, action: { payload: number }) {
+    selectQuiz(state, action: { payload: number | null }) {
       state.selectedQuizId = action.payload;
       state.questions = []; // Reset questions when selecting a new quiz
     },
@@ -532,7 +518,7 @@ const quizSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(submitQuiz.fulfilled, (state, action) => {
+      .addCase(submitQuiz.fulfilled, (state) => {
         state.loading = false;
         state.selectedQuizId = null;
         state.questions = [];

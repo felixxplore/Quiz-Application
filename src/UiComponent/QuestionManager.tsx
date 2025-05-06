@@ -23,6 +23,8 @@ interface Question {
   options: Option[];
 }
 
+ 
+
 const QuestionManager: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { selectedQuizId, questions, loading, error } = useSelector(
@@ -164,7 +166,7 @@ const QuestionManager: React.FC = () => {
         dispatch(deleteQuestion(questionId)).unwrap();
         toast.success("deleted successfully.");
       } catch (err) {
-        toast.error(err);
+        toast.error(String(err));
       }
     }
   };

@@ -12,19 +12,19 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { logout } from "@/store/authSlice";
 
-interface Option {
-  id: number;
-  optionText: string;
-  isCorrect: boolean;
-  optionIndex: number;
-}
+// interface Option { //* declare but not used
+//   id: number;
+//   optionText: string;
+//   isCorrect: boolean;
+//   optionIndex: number;
+// }
 
-interface Question {
-  id: number;
-  questionText: string;
-  questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
-  options: Option[];
-}
+// interface Question { //* declare but not used
+//   id: number;
+//   questionText: string;
+//   questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
+//   options: Option[];
+// }
 
 interface Quiz {
   id: number;
@@ -141,8 +141,8 @@ const UserQuiz: React.FC = () => {
         (q) => q.questionType === "TRUE_FALSE" || q.questionType === "MCQ"
       )
       .map((question) => ({
-        questionId: question.id,
-        selectedOptionId: answers[question.id] || 0,
+        questionId: question.id!,
+        selectedOptionId: answers[question.id!] ?? 0,
       }));
 
     dispatch(
@@ -452,9 +452,9 @@ const UserQuiz: React.FC = () => {
                                   type="radio"
                                   name={`question-${question.id}`}
                                   value={option.id}
-                                  checked={answers[question.id] === option.id}
+                                  checked={answers[question.id!] === option.id}
                                   onChange={() =>
-                                    handleAnswerChange(question.id, option.id)
+                                    handleAnswerChange(question.id!, option.id!)
                                   }
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                                 />

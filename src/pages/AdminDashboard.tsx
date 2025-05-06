@@ -25,11 +25,11 @@ import { toast, ToastContainer } from "react-toastify";
 // import "react-toastify/dist/ReactToasitfy.css";
 import { useNavigate } from "react-router-dom";
 
-interface Topic {
-  id: number;
-  name: string;
-  subtopics: { id: number; name: string }[];
-}
+// interface Topic {
+//   id: number;
+//   name: string;
+//   subtopics: { id: number; name: string }[];
+// }
 
 interface Quiz {
   id: number;
@@ -56,7 +56,7 @@ export const AdminDashboard: React.FC = () => {
     error,
     quizInfo,
   } = useSelector((state: RootState) => state.quiz);
-  const { user, token } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   //* state for sidebar visibility
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -101,31 +101,38 @@ export const AdminDashboard: React.FC = () => {
       toast.success("Topic created successfully!");
     } catch (error) {
       console.log("error come from handleTopicSave : ", error);
-      toast.error(error);
+      toast.error(String(error));
     }
   };
 
   //* handle subtopic save
-  const handleSubtopicSave = async (subtopicName: string, topicId: number) => {
+  const handleSubtopicSave = async (
+    // subtopicName: string, topicId: number
+    subtopicName: { name: string; topicId: number }
+  ) => {
     console.log(
       "handleSubtopicSave: subtopicName=",
-      subtopicName,
-      " topicId=",
-      topicId
+      subtopicName
+      // " topicId=",
+      // topicId
     );
 
     try {
       await dispatch(
-        createSubtopic({
-          name: subtopicName?.name,
-          topicId: subtopicName?.topicId,
-        })
+        createSubtopic(
+          //   {
+          //   name: subtopicName?.name,
+          //   topicId: subtopicName?.topicId,
+          // }
+
+          subtopicName
+        )
       ).unwrap();
       dispatch(closeSubtopicModal());
       toast.success("Subtopic create succesfully!");
     } catch (error) {
       console.log("error come from handleSubtopicSave : ", error);
-      toast.error(error);
+      toast.error(String(error));
     }
   };
 
@@ -137,6 +144,7 @@ export const AdminDashboard: React.FC = () => {
     timeLimit: number;
     topicId: number;
     subtopicId: number;
+    id: number;
   }) => {
     console.log("handleQuizInfoSave : quizInfo= ", quizInfo);
     try {
@@ -145,7 +153,7 @@ export const AdminDashboard: React.FC = () => {
       toast.success("Quiz create successfully!");
     } catch (error) {
       console.log("error come from handle quizInfo save : ", error);
-      toast.error(error);
+      toast.error(String(error));
     }
   };
 
@@ -169,7 +177,7 @@ export const AdminDashboard: React.FC = () => {
       toast.success("Quiz updated successfully!");
     } catch (error) {
       console.log("error come from handleEditQuizSave : ", error);
-      toast.error(error);
+      toast.error(String(error));
     }
   };
 
@@ -200,7 +208,7 @@ export const AdminDashboard: React.FC = () => {
         await dispatch(deleteQuiz(quizId)).unwrap();
         toast.success("Quiz deleted successfully!");
       } catch (error) {
-        toast.error(error);
+        toast.error(String(error));
       }
     }
   };
@@ -532,7 +540,7 @@ export const AdminDashboard: React.FC = () => {
                   >
                     Back to Quizzes
                   </button>
-                  <QuestionManager quizId={selectedQuizId} />
+                  <QuestionManager />
                 </div>
               )}
             </div>
