@@ -53,6 +53,16 @@ interface QuizInfo {
   id: number;
 }
 
+type Submission = {
+  quizId: number;
+  submittedAt: string;
+  quizTitle: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  percentage: number;
+};
+
 interface QuizState {
   isTopicModalOpen: boolean;
   isSubtopicModalOpen: boolean;
@@ -61,7 +71,7 @@ interface QuizState {
   quizInfo: QuizInfo;
   topics: Topic[];
   quizzes: Quiz[];
-  submissions: [];
+  submissions: Submission[];
   selectedQuizId: number | null;
   questions: Question[];
   loading: boolean;
