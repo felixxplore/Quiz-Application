@@ -1,5 +1,5 @@
 // src/pages/Home.tsx (or wherever your route is defined)
- import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Award, TrendingUp } from "lucide-react";
@@ -9,14 +9,14 @@ import type { FC } from "react";
 
 const Home: FC = () => {
   return (
-    <main className="flex flex-col">
+    <main className=" flex flex-col">
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-purple-DEFAULT/10 to-magenta-DEFAULT/5">
+      <section className=" w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-purple-DEFAULT/10 to-magenta-DEFAULT/5">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+              <div className=" space-y-2">
+                <h1 className=" text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
                   Learn, Play, Grow with QuizWiz
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
@@ -29,7 +29,11 @@ const Home: FC = () => {
                   <Button size="lg">Start a Quiz</Button>
                 </Link>
                 <Link to="/topics">
-                  <Button size="lg" variant="outline">
+                  <Button
+                    size="lg"
+                    className="border-2 border-gray-600"
+                    variant="outline"
+                  >
                     Browse Topics
                   </Button>
                 </Link>
@@ -38,7 +42,7 @@ const Home: FC = () => {
             <div className="flex justify-center lg:justify-end">
               <div className="relative w-full max-w-[500px] aspect-square rounded-lg overflow-hidden bg-muted">
                 <img
-                  src="/placeholder.svg?height=500&width=500"
+                  src="./src/assets/home1.jpeg"
                   alt="Students enjoying interactive quizzes"
                   className="object-cover w-full h-full"
                 />
@@ -75,6 +79,7 @@ const Home: FC = () => {
                 </p>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
                 <div className="p-3 rounded-full bg-primary/10">
@@ -108,7 +113,7 @@ const Home: FC = () => {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div className="space-y-1">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+              <h2 className="text-3xl text-left font-bold tracking-tighter md:text-4xl">
                 Featured Quizzes
               </h2>
               <p className="max-w-[700px] text-muted-foreground">
@@ -128,7 +133,7 @@ const Home: FC = () => {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div className="space-y-1">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+              <h2 className="text-3xl text-left font-bold tracking-tighter md:text-4xl">
                 Popular Topics
               </h2>
               <p className="max-w-[700px] text-muted-foreground">
@@ -144,8 +149,8 @@ const Home: FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-purple-DEFAULT to-magenta-DEFAULT text-white">
-        <div className="container px-4 md:px-6">
+      <section className=" w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-purple-DEFAULT to-magenta-DEFAULT text-white">
+        <div className="text-black container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
@@ -160,8 +165,8 @@ const Home: FC = () => {
               <Link to="/signup">
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="bg-yellow-DEFAULT text-black hover:bg-yellow-DEFAULT/90"
+                  variant="default"
+                  className="bg-primary text-black hover:bg-yellow-DEFAULT/90"
                 >
                   Sign Up Now
                 </Button>
@@ -170,7 +175,7 @@ const Home: FC = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/10"
+                  className="border-2 border-gray-600"
                 >
                   Explore Quizzes
                 </Button>
