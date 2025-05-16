@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,13 +19,27 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import Navbar from "./Navbar";
+import { fetchQuizzes } from "@/store/quizSlice";
 
-export default function QuizzesPage() {
+const Quizzes: React.FC = () => {
+  const [search, setSearch] = useState("");
+  const { quizzes } = useSelector((state: RootState) => state.quiz);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchQuizzes());
+  }, [dispatch]);
+
   return (
-    <div className="container py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div className="flex flex-col">
+      <div className="mt-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Quizzes</h1>
+          <h1 className=" text-left text-3xl font-bold tracking-tight">
+            Quizzes
+          </h1>
           <p className="text-muted-foreground">
             Explore our collection of interactive quizzes across various topics
           </p>
@@ -41,6 +56,8 @@ export default function QuizzesPage() {
             <Input
               type="search"
               placeholder="Search quizzes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
             />
           </div>
@@ -100,6 +117,7 @@ export default function QuizzesPage() {
             </div>
           </div>
 
+          {/* Grid View */}
           <TabsContent value="grid" className="mt-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {quizzes.map((quiz) => (
@@ -111,7 +129,7 @@ export default function QuizzesPage() {
                   <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                     <div className="aspect-video w-full overflow-hidden">
                       <img
-                        src={quiz.image || "/placeholder.svg"}
+                        src={"./src/assets/image.png"}
                         alt={quiz.title}
                         className="object-cover w-full h-full transition-transform group-hover:scale-105"
                       />
@@ -120,46 +138,45 @@ export default function QuizzesPage() {
                       <div className="flex justify-between items-start">
                         <Badge
                           variant={
-                            quiz.difficulty === "Easy"
+                            quiz.difficultyLevel === "EASY"
                               ? "outline"
-                              : quiz.difficulty === "Medium"
+                              : quiz.difficultyLevel === "MEDIUM"
                               ? "default"
                               : "secondary"
                           }
                           className={
-                            quiz.difficulty === "Easy"
+                            quiz.difficultyLevel === "EASY"
                               ? "border-yellow-DEFAULT text-yellow-DEFAULT"
-                              : quiz.difficulty === "Medium"
+                              : quiz.difficultyLevel === "MEDIUM"
                               ? "bg-orange-DEFAULT hover:bg-orange-DEFAULT/90"
                               : "bg-purple-DEFAULT hover:bg-purple-DEFAULT/90"
                           }
                         >
-                          {quiz.difficulty}
+                          {quiz.difficultyLevel}
                         </Badge>
                         <Badge
                           variant="outline"
                           className="border-magenta-DEFAULT/50 text-magenta-DEFAULT"
                         >
-                          {quiz.ageGroup}
+                          {quiz?.ageGroup || "All Ages"}
                         </Badge>
                       </div>
-                      <CardTitle className="text-lg mt-2 line-clamp-2">
+                      <CardTitle className="text-left text-lg mt-2 line-clamp-2">
                         {quiz.title}
                       </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <p className="text-sm text-muted-foreground">
-                        {quiz.topic} • {quiz.subtopic}
+                      <p className="text-left text-sm text-muted-foreground">
+                        {quiz.topicName} • {quiz.subtopicName}
                       </p>
-                    </CardContent>
+                    </CardHeader>
+
                     <CardFooter className="p-4 pt-0 flex justify-between text-xs text-muted-foreground">
                       <div className="flex items-center">
                         <Clock className="mr-1 h-3 w-3" />
-                        {quiz.timeLimit}
+                        {quiz.timeLimit} Min
                       </div>
                       <div className="flex items-center">
                         <Users className="mr-1 h-3 w-3" />
-                        {quiz.participants.toLocaleString()}
+                        {quiz?.participants || "20"}{" "}
                       </div>
                     </CardFooter>
                   </Card>
@@ -168,6 +185,7 @@ export default function QuizzesPage() {
             </div>
           </TabsContent>
 
+          {/* List View */}
           <TabsContent value="list" className="mt-6">
             <div className="grid gap-4">
               {quizzes.map((quiz) => (
@@ -176,7 +194,7 @@ export default function QuizzesPage() {
                     <div className="flex flex-col sm:flex-row">
                       <div className="sm:w-48 h-32 sm:h-auto overflow-hidden">
                         <img
-                          src={quiz.image || "/placeholder.svg"}
+                          src={"./src/assets/image.png"}
                           alt={quiz.title}
                           className="object-cover w-full h-full"
                         />
@@ -185,43 +203,43 @@ export default function QuizzesPage() {
                         <div className="flex justify-between items-start mb-2">
                           <Badge
                             variant={
-                              quiz.difficulty === "Easy"
+                              quiz.difficultyLevel === "EASY"
                                 ? "outline"
-                                : quiz.difficulty === "Medium"
+                                : quiz.difficultyLevel === "MEDIUM"
                                 ? "default"
                                 : "secondary"
                             }
                             className={
-                              quiz.difficulty === "Easy"
+                              quiz.difficultyLevel === "EASY"
                                 ? "border-yellow-DEFAULT text-yellow-DEFAULT"
-                                : quiz.difficulty === "Medium"
+                                : quiz.difficultyLevel === "MEDIUM"
                                 ? "bg-orange-DEFAULT hover:bg-orange-DEFAULT/90"
                                 : "bg-purple-DEFAULT hover:bg-purple-DEFAULT/90"
                             }
                           >
-                            {quiz.difficulty}
+                            {quiz.difficultyLevel}
                           </Badge>
                           <Badge
                             variant="outline"
                             className="border-magenta-DEFAULT/50 text-magenta-DEFAULT"
                           >
-                            {quiz.ageGroup}
+                            {quiz?.ageGroup || "All Ages"}
                           </Badge>
                         </div>
                         <h3 className="text-lg font-semibold mb-1">
                           {quiz.title}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {quiz.topic} • {quiz.subtopic}
+                          {quiz.topicName} • {quiz.subtopicName}
                         </p>
                         <div className="mt-auto flex justify-between text-xs text-muted-foreground">
                           <div className="flex items-center">
                             <Clock className="mr-1 h-3 w-3" />
-                            {quiz.timeLimit}
+                            {quiz.timeLimit} Min
                           </div>
                           <div className="flex items-center">
                             <Users className="mr-1 h-3 w-3" />
-                            {quiz.participants.toLocaleString()} participants
+                            {quiz?.participants || "20"} participants
                           </div>
                         </div>
                       </div>
@@ -235,4 +253,6 @@ export default function QuizzesPage() {
       </div>
     </div>
   );
-}
+};
+
+export default Quizzes;

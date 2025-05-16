@@ -5,9 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Award, TrendingUp } from "lucide-react";
 import { FeaturedQuizzes } from "@/components/FeaturedQuizzes";
 import { PopularTopics } from "@/components/PopularTopics";
-import type { FC } from "react";
+import { useEffect, type FC } from "react";
+import { useDispatch } from "react-redux";
+import { type AppDispatch } from "@/store/store";
+import { fetchQuizzes } from "@/store/quizSlice";
+import Navbar from "@/components/Navbar";
 
 const Home: FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchQuizzes());
+  }, [dispatch]);
   return (
     <main className=" flex flex-col">
       {/* Hero Section */}
@@ -16,10 +25,10 @@ const Home: FC = () => {
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="flex flex-col justify-center space-y-4">
               <div className=" space-y-2">
-                <h1 className=" text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                <h1 className=" text-3xl text-left font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
                   Learn, Play, Grow with QuizWiz
                 </h1>
-                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                <p className="text-left max-w-[600px] text-muted-foreground md:text-xl">
                   Discover fun and interactive quizzes for all ages. Challenge
                   yourself, learn new topics, and track your progress.
                 </p>
