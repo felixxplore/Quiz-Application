@@ -44,7 +44,4 @@ public class UserEntity {
 
         return enabled;
     }
-
-
-
 }

@@ -18,26 +18,16 @@ public class QuizEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private UserEntity user;
+
 
     private String title;
-
     private String Description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DifficultyLevel difficultyLevel;
-
-
-
     private Integer timeLimit; // In Minutes
-
-
     private String createdBy;
-
-
 
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
@@ -56,7 +46,5 @@ public class QuizEntity {
     private LocalDateTime updatedAt;
     private Integer totalMarks;
     private Boolean isTimed;
-
-
 }
 

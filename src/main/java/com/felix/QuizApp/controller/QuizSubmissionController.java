@@ -4,7 +4,8 @@ import com.felix.QuizApp.DTO.QuizResultDTO;
 import com.felix.QuizApp.DTO.SubmitQuizRequestDTO;
 import com.felix.QuizApp.security.UserPrinciple;
 import com.felix.QuizApp.service.QuizSubmissionService;
- import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
  import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
@@ -22,7 +23,7 @@ public class QuizSubmissionController {
 
     @PostMapping("/submit")
     public ResponseEntity<QuizResultDTO> submitQuiz(
-            @RequestBody SubmitQuizRequestDTO request,
+             @RequestBody SubmitQuizRequestDTO request,
             @AuthenticationPrincipal UserPrinciple user // <- get from security context
     ) {
 

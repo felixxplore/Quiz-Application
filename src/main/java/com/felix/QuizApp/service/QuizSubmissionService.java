@@ -1,5 +1,6 @@
 package com.felix.QuizApp.service;
 
+import com.felix.QuizApp.DTO.AnswerSubmissionResponseDTO;
 import com.felix.QuizApp.DTO.QuizResultDTO;
 import com.felix.QuizApp.DTO.SubmitQuizRequestDTO;
 import com.felix.QuizApp.model.*;
@@ -23,65 +24,323 @@ public class QuizSubmissionService {
     private final UserAnswerRepository userAnswerRepository;
     private final UserRepository userRepository;
 
-    public QuizResultDTO submitQuiz(UUID userId, SubmitQuizRequestDTO request) {
-        QuizEntity quiz = quizRepository.findById(request.getQuizId())
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+//    public QuizResultDTO submitQuiz(UUID userId, SubmitQuizRequestDTO request) {
+//        QuizEntity quiz = quizRepository.findById(request.getQuizId())
+//                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        QuizSubmission submission = new QuizSubmission();
+//        submission.setQuiz(quiz);
+//        submission.setUser(user);
+//        submission.setTotalQuestions(request.getAnswers().size());
+//
+//        int correctCount = 0;
+//        List<UserAnswer> userAnswers = new ArrayList<>();
+//
+//        for (SubmitQuizRequestDTO.AnswerDTO ans : request.getAnswers()) {
+//            QuestionEntity question = questionRepository.findById(ans.getQuestionId())
+//                    .orElseThrow(() -> new RuntimeException("Question not found"));
+//            AnswerOption selected = answerOptionRepository.findById(ans.getSelectedOptionId())
+//                    .orElseThrow(() -> new RuntimeException("Option not found"));
+//
+//            boolean isCorrect = Boolean.TRUE.equals(selected.getIsAnswerCorrect());
+//            if (isCorrect) correctCount++;
+//
+//            UserAnswer userAnswer = new UserAnswer();
+//            userAnswer.setSubmission(submission);
+//            userAnswer.setQuestion(question);
+//            userAnswer.setSelectedOption(selected);
+//            userAnswer.setIsCorrect(isCorrect);
+//            userAnswers.add(userAnswer);
+//        }
+//
+//        int totalQuestions = request.getAnswers().size();
+//        double percentage = totalQuestions > 0
+//                ? (correctCount * 100.0) / totalQuestions
+//                : 0.0;
+//
+//        // ✅ Setting all computed values in submission entity
+//        submission.setCorrectAnswers(correctCount);
+//        submission.setTotalQuestions(totalQuestions);
+//        submission.setPercentage(percentage);
+//        submission.setScore(correctCount); // assuming 1 mark per correct question
+//        submission.setUserAnswers(userAnswers);
+//
+//        quizSubmissionRepository.save(submission); // cascade saves answers too
+//
+//        return mapToResultDto(submission); // returns final detailed result
+//    }
+//
+//    private QuizResultDTO mapToResultDto(QuizSubmission submission) {
+//        QuizResultDTO dto = new QuizResultDTO();
+//        dto.setQuizId(submission.getQuiz().getId());
+//        dto.setQuizTitle(submission.getQuiz().getTitle());
+//        dto.setTotalQuestions(submission.getTotalQuestions());
+//        dto.setCorrectAnswers(submission.getCorrectAnswers());
+//        dto.setScore(submission.getScore());
+//        dto.setPercentage(submission.getPercentage());
+//        dto.setSubmittedAt(submission.getSubmittedAt()); // or whatever timestamp field you're using
+//        return dto;
+//    }
+//
+//
+//    public List<QuizResultDTO> getUserSubmissions(UUID userId) {
+//        return quizSubmissionRepository.findByUserId(userId)
+//                .stream()
+//                .map(this::mapToResultDto)
+//                .collect(Collectors.toList());
+//    }
+//public QuizResultDTO submitQuiz(UUID userId, SubmitQuizRequestDTO request) {
+//    QuizEntity quiz = quizRepository.findById(request.getQuizId())
+//            .orElseThrow(() -> new RuntimeException("Quiz not found"));
+//    UserEntity user = userRepository.findById(userId)
+//            .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//    QuizSubmission submission = new QuizSubmission();
+//    submission.setQuiz(quiz);
+//    submission.setUser(user);
+//    submission.setTotalQuestions(request.getAnswers().size());
+//
+//    int correctCount = 0;
+//    List<UserAnswer> userAnswers = new ArrayList<>();
+//
+//    for (SubmitQuizRequestDTO.AnswerDTO ans : request.getAnswers()) {
+//        QuestionEntity question = questionRepository.findById(ans.getQuestionId())
+//                .orElseThrow(() -> new RuntimeException("Question not found"));
+//        AnswerOption selected = answerOptionRepository.findById(ans.getSelectedOptionId())
+//                .orElseThrow(() -> new RuntimeException("Option not found"));
+//
+//        boolean isCorrect = Boolean.TRUE.equals(selected.getIsAnswerCorrect());
+//        if (isCorrect) correctCount++;
+//
+//        UserAnswer userAnswer = new UserAnswer();
+//        userAnswer.setSubmission(submission);
+//        userAnswer.setQuestion(question);
+//        userAnswer.setSelectedOption(selected);
+//        userAnswer.setIsCorrect(isCorrect);
+//        userAnswers.add(userAnswer);
+//    }
+//
+//    int totalQuestions = request.getAnswers().size();
+//    double percentage = totalQuestions > 0
+//            ? (correctCount * 100.0) / totalQuestions
+//            : 0.0;
+//
+//    submission.setCorrectAnswers(correctCount);
+//    submission.setTotalQuestions(totalQuestions);
+//    submission.setPercentage(percentage);
+//    submission.setScore(correctCount);
+//    submission.setUserAnswers(userAnswers);
+//
+//    quizSubmissionRepository.save(submission);
+//
+//    return mapToResultDto(submission);
+//}
+//
+//    private QuizResultDTO mapToResultDto(QuizSubmission submission) {
+//        QuizResultDTO dto = new QuizResultDTO();
+//        dto.setQuizId(submission.getQuiz().getId());
+//        dto.setQuizTitle(submission.getQuiz().getTitle());
+//        dto.setTotalQuestions(submission.getTotalQuestions());
+//        dto.setCorrectAnswers(submission.getCorrectAnswers());
+//        dto.setScore(submission.getScore());
+//        dto.setPercentage(submission.getPercentage());
+//        dto.setSubmittedAt(submission.getSubmittedAt());
+//        dto.setAnswers(submission.getUserAnswers().stream().map(answer -> {
+//            AnswerSubmissionResponseDTO answerDTO = new AnswerSubmissionResponseDTO();
+//            answerDTO.setQuestionId(answer.getQuestion().getId());
+//            answerDTO.setQuestionText(answer.getQuestion().getQuestionText());
+//            answerDTO.setQuestionType(String.valueOf(answer.getQuestion().getQuestionType()));
+//            answerDTO.setSelectedOptionId(answer.getSelectedOption().getId());
+//            answerDTO.setSelectedOptionText(answer.getSelectedOption().getOptionText());
+//            answerDTO.setIsCorrect(answer.getIsCorrect());
+//            answerDTO.setCorrectAnswer(answer.getQuestion().getOptions().stream()
+//                    .filter(AnswerOption::getIsAnswerCorrect)
+//                    .findFirst()
+//                    .map(AnswerOption::getOptionText)
+//                    .orElse(""));
+//            return answerDTO;
+//        }).collect(Collectors.toList()));
+//        return dto;
+//    }
+//
+//    public List<QuizResultDTO> getUserSubmissions(UUID userId) {
+//        return quizSubmissionRepository.findByUserId(userId)
+//                .stream()
+//                .map(this::mapToResultDto)
+//                .collect(Collectors.toList());
+//    }
 
-        QuizSubmission submission = new QuizSubmission();
-        submission.setQuiz(quiz);
-        submission.setUser(user);
+//    public QuizResultDTO submitQuiz(UUID userId, SubmitQuizRequestDTO request) {
+//        QuizEntity quiz = quizRepository.findById(request.getQuizId())
+//                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        QuizSubmission submission = new QuizSubmission();
+//        submission.setQuiz(quiz);
+//        submission.setUser(user);
+//        submission.setTotalQuestions(request.getAnswers().size());
+//
+//        int correctCount = 0;
+//        List<UserAnswer> userAnswers = new ArrayList<>();
+//
+//        for (SubmitQuizRequestDTO.AnswerDTO ans : request.getAnswers()) {
+//            QuestionEntity question = questionRepository.findById(ans.getQuestionId())
+//                    .orElseThrow(() -> new RuntimeException("Question not found"));
+//            AnswerOption selected = answerOptionRepository.findById(ans.getSelectedOptionId())
+//                    .orElseThrow(() -> new RuntimeException("Option not found"));
+//
+//            boolean isCorrect = Boolean.TRUE.equals(selected.getIsAnswerCorrect());
+//            if (isCorrect) correctCount++;
+//
+//            UserAnswer userAnswer = new UserAnswer();
+//            userAnswer.setSubmission(submission);
+//            userAnswer.setQuestion(question);
+//            userAnswer.setSelectedOption(selected);
+//            userAnswer.setIsCorrect(isCorrect);
+//            userAnswers.add(userAnswer);
+//        }
+//
+//        int totalQuestions = request.getAnswers().size();
+//        double percentage = totalQuestions > 0
+//                ? (correctCount * 100.0) / totalQuestions
+//                : 0.0;
+//
+//        submission.setCorrectAnswers(correctCount);
+//        submission.setTotalQuestions(totalQuestions);
+//        submission.setPercentage(percentage);
+//        submission.setScore(correctCount);
+//        submission.setUserAnswers(userAnswers);
+//
+//        quizSubmissionRepository.save(submission);
+//
+//        return mapToResultDto(submission);
+//    }
+//
+//    private QuizResultDTO mapToResultDto(QuizSubmission submission) {
+//        QuizResultDTO dto = new QuizResultDTO();
+//        dto.setQuizId(submission.getQuiz().getId());
+//        dto.setQuizTitle(submission.getQuiz().getTitle());
+//        dto.setTotalQuestions(submission.getTotalQuestions());
+//        dto.setCorrectAnswers(submission.getCorrectAnswers());
+//        dto.setScore(submission.getScore());
+//        dto.setPercentage(submission.getPercentage());
+//        dto.setSubmittedAt(submission.getSubmittedAt());
+//        dto.setAnswers(submission.getUserAnswers().stream().map(answer -> {
+//            AnswerSubmissionResponseDTO answerDTO = new AnswerSubmissionResponseDTO();
+//            answerDTO.setQuestionId(answer.getQuestion().getId());
+//            answerDTO.setQuestionText(answer.getQuestion().getQuestionText());
+//            answerDTO.setQuestionType(String.valueOf(answer.getQuestion().getQuestionType()));
+//            answerDTO.setSelectedOptionId(answer.getSelectedOption().getId());
+//            answerDTO.setSelectedOptionText(answer.getSelectedOption().getOptionText());
+//            answerDTO.setIsCorrect(answer.getIsCorrect());
+//            answerDTO.setCorrectAnswer(answer.getQuestion().getOptions().stream()
+//                    .filter(AnswerOption::getIsAnswerCorrect)
+//                    .findFirst()
+//                    .map(AnswerOption::getOptionText)
+//                    .orElse(""));
+//            // Add all options
+//            answerDTO.setOptions(answer.getQuestion().getOptions().stream().map(opt -> {
+//                AnswerSubmissionResponseDTO.OptionDTO optionDTO = new AnswerSubmissionResponseDTO.OptionDTO();
+//                optionDTO.setOptionId(opt.getId());
+//                optionDTO.setOptionText(opt.getOptionText());
+//                optionDTO.setIsCorrect(opt.getIsAnswerCorrect());
+//                return optionDTO;
+//            }).collect(Collectors.toList()));
+//            return answerDTO;
+//        }).collect(Collectors.toList()));
+//        return dto;
+//    }
+//
+//    public List<QuizResultDTO> getUserSubmissions(UUID userId) {
+//        return quizSubmissionRepository.findByUserId(userId)
+//                .stream()
+//                .map(this::mapToResultDto)
+//                .collect(Collectors.toList());
+//    }
+public QuizResultDTO submitQuiz(UUID userId, SubmitQuizRequestDTO request) {
+    QuizEntity quiz = quizRepository.findById(request.getQuizId())
+            .orElseThrow(() -> new RuntimeException("Quiz not found"));
+    UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        int correctCount = 0;
-        List<UserAnswer> userAnswers = new ArrayList<>();
+    QuizSubmission submission = new QuizSubmission();
+    submission.setQuiz(quiz);
+    submission.setUser(user);
+    submission.setTotalQuestions(request.getAnswers().size());
 
-        for (SubmitQuizRequestDTO.AnswerDTO ans : request.getAnswers()) {
-            QuestionEntity question = questionRepository.findById(ans.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Question not found"));
-            AnswerOption selected = answerOptionRepository.findById(ans.getSelectedOptionId())
-                    .orElseThrow(() -> new RuntimeException("Option not found"));
+    int correctCount = 0;
+    List<UserAnswer> userAnswers = new ArrayList<>();
 
-            boolean isCorrect = Boolean.TRUE.equals(selected.getIsAnswerCorrect());
-            if (isCorrect) correctCount++;
+    for (SubmitQuizRequestDTO.AnswerDTO ans : request.getAnswers()) {
+        QuestionEntity question = questionRepository.findById(ans.getQuestionId())
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+        AnswerOption selected = answerOptionRepository.findById(ans.getSelectedOptionId())
+                .orElseThrow(() -> new RuntimeException("Option not found"));
 
-            UserAnswer userAnswer = new UserAnswer();
-            userAnswer.setSubmission(submission);
-            userAnswer.setQuestion(question);
-            userAnswer.setSelectedOption(selected);
-            userAnswer.setIsCorrect(isCorrect);
-            userAnswers.add(userAnswer);
-        }
+        boolean isCorrect = Boolean.TRUE.equals(selected.getIsAnswerCorrect());
+        if (isCorrect) correctCount++;
 
-        int totalQuestions = request.getAnswers().size();
-        double percentage = totalQuestions > 0
-                ? (correctCount * 100.0) / totalQuestions
-                : 0.0;
-
-        // ✅ Setting all computed values in submission entity
-        submission.setCorrectAnswers(correctCount);
-        submission.setTotalQuestions(totalQuestions);
-        submission.setPercentage(percentage);
-        submission.setScore(correctCount); // assuming 1 mark per correct question
-        submission.setUserAnswers(userAnswers);
-
-        quizSubmissionRepository.save(submission); // cascade saves answers too
-
-        return mapToResultDto(submission); // returns final detailed result
+        UserAnswer userAnswer = new UserAnswer();
+        userAnswer.setSubmission(submission);
+        userAnswer.setQuestion(question);
+        userAnswer.setSelectedOption(selected);
+        userAnswer.setIsCorrect(isCorrect);
+        userAnswers.add(userAnswer);
     }
+
+    int totalQuestions = request.getAnswers().size();
+    double percentage = totalQuestions > 0
+            ? (correctCount * 100.0) / totalQuestions
+            : 0.0;
+
+    submission.setCorrectAnswers(correctCount);
+    submission.setTotalQuestions(totalQuestions);
+    submission.setPercentage(percentage);
+    submission.setScore(correctCount);
+    submission.setUserAnswers(userAnswers);
+
+    QuizSubmission savedSubmission = quizSubmissionRepository.save(submission);
+
+    return mapToResultDto(savedSubmission);
+}
 
     private QuizResultDTO mapToResultDto(QuizSubmission submission) {
         QuizResultDTO dto = new QuizResultDTO();
+        dto.setSubmissionId(submission.getId()); // Set unique submission ID
         dto.setQuizId(submission.getQuiz().getId());
         dto.setQuizTitle(submission.getQuiz().getTitle());
         dto.setTotalQuestions(submission.getTotalQuestions());
         dto.setCorrectAnswers(submission.getCorrectAnswers());
         dto.setScore(submission.getScore());
         dto.setPercentage(submission.getPercentage());
-        dto.setSubmittedAt(submission.getSubmittedAt()); // or whatever timestamp field you're using
+        dto.setSubmittedAt(submission.getSubmittedAt());
+        dto.setAnswers(submission.getUserAnswers().stream().map(answer -> {
+            AnswerSubmissionResponseDTO answerDTO = new AnswerSubmissionResponseDTO();
+            answerDTO.setQuestionId(answer.getQuestion().getId());
+            answerDTO.setQuestionText(answer.getQuestion().getQuestionText());
+            answerDTO.setQuestionType(String.valueOf(answer.getQuestion().getQuestionType()));
+            answerDTO.setSelectedOptionId(answer.getSelectedOption().getId());
+            answerDTO.setSelectedOptionText(answer.getSelectedOption().getOptionText());
+            answerDTO.setIsCorrect(answer.getIsCorrect());
+            answerDTO.setCorrectAnswer(answer.getQuestion().getOptions().stream()
+                    .filter(AnswerOption::getIsAnswerCorrect)
+                    .findFirst()
+                    .map(AnswerOption::getOptionText)
+                    .orElse(""));
+            answerDTO.setOptions(answer.getQuestion().getOptions().stream().map(opt -> {
+                AnswerSubmissionResponseDTO.OptionDTO optionDTO = new AnswerSubmissionResponseDTO.OptionDTO();
+                optionDTO.setOptionId(opt.getId());
+                optionDTO.setOptionText(opt.getOptionText());
+                optionDTO.setIsCorrect(opt.getIsAnswerCorrect());
+                return optionDTO;
+            }).collect(Collectors.toList()));
+            return answerDTO;
+        }).collect(Collectors.toList()));
         return dto;
     }
-
 
     public List<QuizResultDTO> getUserSubmissions(UUID userId) {
         return quizSubmissionRepository.findByUserId(userId)
@@ -90,5 +349,10 @@ public class QuizSubmissionService {
                 .collect(Collectors.toList());
     }
 
+    public QuizResultDTO getSubmissionById(Long submissionId) {
+        QuizSubmission submission = quizSubmissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        return mapToResultDto(submission);
+    }
 }
 

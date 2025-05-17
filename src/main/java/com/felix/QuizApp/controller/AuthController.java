@@ -4,27 +4,18 @@ package com.felix.QuizApp.controller;
 import com.felix.QuizApp.DTO.LoginRequest;
 import com.felix.QuizApp.DTO.PasswordResetRequest;
 import com.felix.QuizApp.DTO.SignupRequest;
-import com.felix.QuizApp.enums.UserRole;
-import com.felix.QuizApp.model.UserEntity;
-import com.felix.QuizApp.model.VerificationToken;
-import com.felix.QuizApp.repository.UserRepository;
-
-
-import com.felix.QuizApp.repository.VerificationTokenRepository;
-import com.felix.QuizApp.config.JwtUtil;
 import com.felix.QuizApp.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.net.URI;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+    @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -33,13 +24,13 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<String> signup(@Valid @RequestBody SignupRequest request) {
         authService.signup(request);
         return ResponseEntity.ok("User registered successfully!  Check logs for verification link.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String,Object>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String,Object>> login( @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 

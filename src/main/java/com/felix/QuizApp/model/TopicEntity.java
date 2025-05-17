@@ -25,5 +25,4 @@ public class TopicEntity {
         @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
          private List<SubtopicEntity> subtopics = new ArrayList<>();
 
-
 }

@@ -2,6 +2,7 @@ package com.felix.QuizApp.controller;
 
 import com.felix.QuizApp.DTO.QuestionDTO;
 import com.felix.QuizApp.service.QuestionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +13,13 @@ import java.util.List;
 @RequestMapping("/api/questions")
 @RequiredArgsConstructor
 public class QuestionController {
+
     private final QuestionService questionService;
 
     @PostMapping("/add/{quizId}")
     public ResponseEntity<QuestionDTO> addQuestionToQuiz(
             @PathVariable Long quizId,
-            @RequestBody QuestionDTO questionDTO) {
+           @Valid @RequestBody QuestionDTO questionDTO) {
         return ResponseEntity.ok(questionService.addQuestionToQuiz(quizId, questionDTO));
     }
 
@@ -27,7 +29,7 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<QuestionDTO> updateQuestion(@PathVariable Long id, @RequestBody QuestionDTO questionDTO) {
+    public ResponseEntity<QuestionDTO> updateQuestion(@PathVariable Long id,@Valid @RequestBody QuestionDTO questionDTO) {
         return ResponseEntity.ok(questionService.updateQuestion(id, questionDTO));
     }
 
