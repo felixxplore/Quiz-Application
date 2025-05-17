@@ -81,10 +81,15 @@ interface DisplayQuiz {
   questions: number;
   ageGroup: string;
 }
+interface SelectedAnswer {
+  questionId: number;
+  selectedOptionId?: number;
+  fillBlankAnswer?: string;
+}
 
-interface SelectedAnswers {
+interface QuizSubmissionPayload {
   quizId: number;
-  answers: Array<{ questionId: number; selectedOptionId: number }>;
+  answers: SelectedAnswer[];
 }
 
 const QuizId: React.FC = () => {
@@ -200,13 +205,42 @@ const QuizId: React.FC = () => {
       setCurrentQuestion(currentQuestion - 1);
     }
   };
-  const getSelectedAnswers = () => {
-    const answers = Object.entries(selectedAnswers).map(
-      ([questionId, selectedOptionId]) => ({
-        questionId: Number(questionId),
-        selectedOptionId: Number(selectedOptionId),
-      })
+  // const getSelectedAnswers = () => {
+  //   const answers = Object.entries(selectedAnswers).map(
+  //     ([questionId, selectedOptionId]) => ({
+  //       questionId: Number(questionId),
+  //       selectedOptionId: Number(selectedOptionId),
+  //     })
+  //   );
+  //   return {
+  //     quizId: Number(quizId) || 0,
+  //     answers,
+  //   };
+  // };
+
+  const getSelectedAnswers = (): QuizSubmissionPayload => {
+    const answers: SelectedAnswer[] = [];
+
+    // Add MCQ/True-False answers
+    Object.entries(selectedAnswers).forEach(
+      ([questionId, selectedOptionId]) => {
+        answers.push({
+          questionId: Number(questionId),
+          selectedOptionId: Number(selectedOptionId),
+        });
+      }
     );
+
+    // Add Fill-in-the-Blank answers
+    Object.entries(fillBlankAnswers).forEach(
+      ([questionId, fillBlankAnswer]) => {
+        answers.push({
+          questionId: Number(questionId),
+          fillBlankAnswer,
+        });
+      }
+    );
+
     return {
       quizId: Number(quizId) || 0,
       answers,
@@ -251,6 +285,13 @@ const QuizId: React.FC = () => {
         ) {
           correctCount++;
         }
+      } else if (question.questionType === "FILL_BLANK") {
+        // Assuming backend provides correctAnswer for FILL_BLANK
+        const userAnswer = fillBlankAnswers[question.id]?.toLowerCase().trim();
+        const correctAnswer = question.correctAnswer?.toLowerCase().trim();
+        if (userAnswer && correctAnswer && userAnswer === correctAnswer) {
+          correctCount++;
+        }
       }
     });
     return {
@@ -261,7 +302,7 @@ const QuizId: React.FC = () => {
           ? Math.round((correctCount / questions.length) * 100)
           : 0,
     };
-  }, [selectedAnswers, fillBlankAnswers, questions]);
+  }, [selectedAnswers, fillBlankAnswers, questions, quizSubmission]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -320,8 +361,8 @@ const QuizId: React.FC = () => {
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{quizMeta.timeLimit}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{quizMeta.questions} Questions</span>
+              <div className="flex justify-end   gap-2">
+                <span className="text-sm ">{quizMeta.questions} Questions</span>
               </div>
             </div>
           </CardContent>
@@ -556,9 +597,8 @@ const QuizId: React.FC = () => {
         <AlertDialog
           open={isSubmitDialogOpen}
           onOpenChange={setIsSubmitDialogOpen}
-         
         >
-          <AlertDialogContent  className="bg-white">
+          <AlertDialogContent className="bg-white">
             <AlertDialogHeader>
               <AlertDialogTitle>Submit Quiz?</AlertDialogTitle>
               <AlertDialogDescription>

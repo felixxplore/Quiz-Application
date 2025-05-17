@@ -32,7 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 const formSchema = z
   .object({
@@ -61,6 +63,11 @@ const formSchema = z
 const Signup: React.FC = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
+  if (user) {
+    navigate("/");
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
