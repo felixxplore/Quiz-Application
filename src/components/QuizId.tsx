@@ -325,7 +325,7 @@ const QuizId: React.FC = () => {
   //* agar quiz start nahi hua hai to ye dikhega
   if (!quizStarted) {
     return (
-      <div className="container py-8">
+      <div className="container py-8 w-1/4 ">
         <div className="mb-6">
           <Link
             to="/quizzes"
@@ -337,7 +337,7 @@ const QuizId: React.FC = () => {
         </div>
         <Card>
           <CardHeader>
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 justify-center mb-5">
               <Badge>{quizMeta.topic}</Badge>
               <Badge>{quizMeta.subtopic}</Badge>
               <Badge

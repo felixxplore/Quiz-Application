@@ -47,6 +47,8 @@ interface Quiz {
   topicName: string;
   subtopicName: string;
   topic: TopicDTO | null;
+  questionCount: number;
+  participants: number;
 }
 
 interface QuizInfo {
@@ -72,6 +74,28 @@ type Submission = {
   percentage: number;
 };
 
+interface AnswerSubmission {
+  questionId: number;
+  questionText: string;
+  questionType: string;
+  selectedOptionId: number;
+  selectedOptionText: string;
+  isCorrect: boolean;
+  correctAnswer: string;
+  options: { optionId: number; optionText: string; isCorrect: boolean }[];
+}
+
+interface QuizSubmission {
+  submissionId: number; // Add submissionId
+  quizId: number;
+  quizTitle: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  percentage: number;
+  submittedAt: string;
+  answers: AnswerSubmission[];
+}
 interface QuizState {
   isTopicModalOpen: boolean;
   isSubtopicModalOpen: boolean;
@@ -81,7 +105,7 @@ interface QuizState {
   topics: Topic[];
   quizzes: Quiz[];
   quiz: Quiz | null; // Added to store single quiz; // Added to store single question
-  submissionsHistory: Submission[];
+  submissionsHistory: QuizSubmission[];
   selectedQuizId: number | null;
   questions: Question[];
   loading: boolean;

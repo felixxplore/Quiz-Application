@@ -1,197 +1,12 @@
-// import React, { useState, type JSX } from "react";
-// import { Link, useLocation } from "react-router-dom";
-// import { Menu, BookOpen, User, Home, Award, LogOut } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-// import { ModeToggle } from "@/components/ModeToggle";
-// import { cn } from "@/lib/utils";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { useToast } from "@/components/ui/use-toast";
-// import Quizzes from "./Quizzes";
-
-// interface RouteItem {
-//   to: string;
-//   label: string;
-//   icon: JSX.Element;
-//   active: boolean;
-// }
-
-// export const Navbar: React.FC = () => {
-//   const [isOpen, setIsOpen] = useState<boolean>(false);
-//   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true); // For demo purposes
-//   const location = useLocation();
-//   const pathname = location.pathname;
-//   const { toast } = useToast();
-
-//   const handleLogout = (): void => {
-//     setIsLoggedIn(false);
-//     toast({
-//       title: "Logged out successfully",
-//       description: "You have been logged out of your account",
-//     });
-//   };
-
-//   const routes: RouteItem[] = [
-//     {
-//       to: "/",
-//       label: "Home",
-//       icon: <Home className="mr-2 h-4 w-4" />,
-//       active: pathname === "/",
-//     },
-//     {
-//       to: "/topics",
-//       label: "Topics",
-//       icon: <BookOpen className="mr-2 h-4 w-4" />,
-//       active: pathname === "/topics",
-//     },
-//     {
-//       to: "/quizzes",
-//       label: "Quizzes",
-//       icon: <Quizzes />,
-//       active: pathname === "/quizzes",
-//     },
-//     {
-//       to: "/profile",
-//       label: "Profile",
-//       icon: <User className="mr-2 h-4 w-4" />,
-//       active: pathname === "/profile",
-//     },
-//   ];
-
-//   return (
-//     <header className="sticky top-0 z-40 w-full border-b bg-background">
-//       <div className="container flex h-16 items-center justify-between">
-//         <div className="flex items-center">
-//           <Link to="/" className="flex items-center space-x-2">
-//             <BookOpen className="h-6 w-6 text-magenta-DEFAULT" />
-//             <span className="font-bold text-xl">QuizWiz</span>
-//           </Link>
-//         </div>
-
-//         <nav className="hidden md:flex items-center space-x-6">
-//           {routes.map((route) => (
-//             <Link
-//               key={route.to}
-//               to={route.to}
-//               className={cn(
-//                 "flex items-center text-sm font-medium transition-colors hover:text-primary",
-//                 route.active ? "text-primary" : "text-muted-foreground"
-//               )}
-//             >
-//               {route.icon}
-//               {route.label}
-//             </Link>
-//           ))}
-//         </nav>
-
-//         <div className="flex items-center space-x-4">
-//           <ModeToggle />
-
-//           {isLoggedIn ? (
-//             <div className="hidden md:flex items-center space-x-4">
-//               <Avatar className="h-8 w-8">
-//                 <AvatarImage
-//                   src="/placeholder.svg?height=32&width=32"
-//                   alt="User"
-//                 />
-//                 <AvatarFallback>JD</AvatarFallback>
-//               </Avatar>
-//               <Button variant="ghost" size="sm" onClick={handleLogout}>
-//                 <LogOut className="mr-2 h-4 w-4" />
-//                 Logout
-//               </Button>
-//             </div>
-//           ) : (
-//             <div className="hidden md:flex items-center space-x-2">
-//               <Button variant="ghost" size="sm" asChild>
-//                 <Link to="/login">Login</Link>
-//               </Button>
-//               <Button size="sm" asChild>
-//                 <Link to="/signup">Sign Up</Link>
-//               </Button>
-//             </div>
-//           )}
-
-//           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-//             <SheetTrigger asChild className="md:hidden">
-//               <Button variant="ghost" size="icon">
-//                 <Menu className="h-5 w-5" />
-//                 <span className="sr-only">Toggle menu</span>
-//               </Button>
-//             </SheetTrigger>
-//             <SheetContent side="right">
-//               <div className="flex flex-col space-y-4 py-4">
-//                 <Link
-//                   to="/"
-//                   className="flex items-center space-x-2"
-//                   onClick={() => setIsOpen(false)}
-//                 >
-//                   <BookOpen className="h-6 w-6 text-magenta-DEFAULT" />
-//                   <span className="font-bold text-xl">QuizWiz</span>
-//                 </Link>
-//                 <div className="flex flex-col space-y-3">
-//                   {routes.map((route) => (
-//                     <Link
-//                       key={route.to}
-//                       to={route.to}
-//                       onClick={() => setIsOpen(false)}
-//                       className={cn(
-//                         "flex items-center text-sm font-medium transition-colors hover:text-primary",
-//                         route.active ? "text-primary" : "text-muted-foreground"
-//                       )}
-//                     >
-//                       {route.icon}
-//                       {route.label}
-//                     </Link>
-//                   ))}
-//                   {isLoggedIn ? (
-//                     <Button
-//                       variant="ghost"
-//                       size="sm"
-//                       onClick={handleLogout}
-//                       className="justify-start"
-//                     >
-//                       <LogOut className="mr-2 h-4 w-4" />
-//                       Logout
-//                     </Button>
-//                   ) : (
-//                     <div className="flex flex-col space-y-2 pt-2">
-//                       <Button
-//                         variant="outline"
-//                         size="sm"
-//                         asChild
-//                         onClick={() => setIsOpen(false)}
-//                       >
-//                         <Link to="/login">Login</Link>
-//                       </Button>
-//                       <Button
-//                         size="sm"
-//                         asChild
-//                         onClick={() => setIsOpen(false)}
-//                       >
-//                         <Link to="/signup">Sign Up</Link>
-//                       </Button>
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-//             </SheetContent>
-//           </Sheet>
-//         </div>
-//       </div>
-//     </header>
-//   );
-// };
-
-// export default Navbar;
-
+// src/components/Navbar.tsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type{ AppDispatch, RootState } from "@/store/store";
+import { logout } from "@/store/authSlice";
 import { Home, BookOpen, User, LogOut, UserPlus, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
-import { logout } from "@/store/authSlice";
+import { Button } from "@/components/ui/button";
 
 interface RouteItem {
   to: string;
@@ -199,12 +14,29 @@ interface RouteItem {
   icon: React.ReactElement;
   active: boolean;
   onClick?: () => void;
+  roles?: Array<"USER" | "ADMIN" | "QUIZ_CREATOR">; // Restrict route visibility by role
 }
 
 export const Navbar: React.FC = () => {
   const { pathname } = useLocation();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const isLoggedIn = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, token } = useSelector((state: RootState) => state.auth);
+  const isLoggedIn = !!token && !!user;
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Fallback: Clear state and navigate
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  };
+
   const routes: RouteItem[] = [
     {
       to: "/",
@@ -229,18 +61,21 @@ export const Navbar: React.FC = () => {
       label: "History",
       icon: <User className="mr-2 h-4 w-4" />,
       active: pathname === "/history",
+      roles: ["USER", "ADMIN", "QUIZ_CREATOR"], // Only for logged-in users
     },
     {
       to: "/admin",
       label: "Admin",
       icon: <User className="mr-2 h-4 w-4" />,
       active: pathname === "/admin",
+      roles: ["ADMIN"], // Only for admins
     },
     {
       to: "/profile",
       label: "Profile",
       icon: <User className="mr-2 h-4 w-4" />,
       active: pathname === "/profile",
+      roles: ["USER", "ADMIN", "QUIZ_CREATOR"], // Only for logged-in users
     },
     ...(isLoggedIn
       ? [
@@ -249,7 +84,8 @@ export const Navbar: React.FC = () => {
             label: "Logout",
             icon: <LogOut className="mr-2 h-4 w-4" />,
             active: false,
-            onClick: logout,
+            onClick: handleLogout,
+            roles: ["USER", "ADMIN", "QUIZ_CREATOR"] as Array<"USER" | "ADMIN" | "QUIZ_CREATOR">,
           },
         ]
       : [
@@ -268,28 +104,51 @@ export const Navbar: React.FC = () => {
         ]),
   ];
 
+  // Filter routes based on user role
+  const filteredRoutes = routes.filter((route) => {
+    if (!route.roles) return true; // Public route
+    return (
+      isLoggedIn &&
+      route.roles.includes(user?.role as "USER" | "ADMIN" | "QUIZ_CREATOR")
+    );
+  });
+
   return (
-    <header className=" sticky top-0  z-20 w-full border-b bg-white">
+    <header className="sticky top-0 z-20 w-full border-b bg-white">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <BookOpen className="h-6 w-6 text-pink-500" />
-          <span className="font-bold text-xl">QuizWiz</span>
+          <span className="font-bold text-xl text-gray-800">QuizWiz</span>
         </Link>
-
         <nav className="flex items-center space-x-6">
-          {routes.map((route) => (
-            <Link
-              key={route.to}
-              to={route.to}
-              className={cn(
-                "flex items-center text-sm font-medium transition-colors hover:text-primary",
-                route.active ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              {route.icon}
-              {route.label}
-            </Link>
-          ))}
+          {filteredRoutes.map((route) =>
+            route.onClick ? (
+              <Button
+                key={route.label}
+                variant="ghost"
+                className={cn(
+                  "flex items-center text-sm font-medium transition-colors hover:text-primary",
+                  route.active ? "text-primary" : "text-muted-foreground"
+                )}
+                onClick={route.onClick}
+              >
+                {route.icon}
+                {route.label}
+              </Button>
+            ) : (
+              <Link
+                key={route.to}
+                to={route.to}
+                className={cn(
+                  "flex items-center text-sm font-medium transition-colors hover:text-primary",
+                  route.active ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {route.icon}
+                {route.label}
+              </Link>
+            )
+          )}
         </nav>
       </div>
     </header>

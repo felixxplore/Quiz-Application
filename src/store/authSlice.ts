@@ -62,11 +62,22 @@ export const login = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk("auth/logout", async () => {
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  return null;
-});
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      // Optional: Call backend logout endpoint if implemented
+      // await api.post("/auth/logout");
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      return null;
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      return rejectWithValue("Logout failed");
+    }
+    return null;
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -109,10 +120,19 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(logout.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(logout.fulfilled, (state) => {
+        state.loading = false;
         state.user = null;
         state.token = null;
         state.signupSuccess = false;
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
