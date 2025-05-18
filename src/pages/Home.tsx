@@ -50,7 +50,7 @@ const Home: FC = () => {
             <div className="flex justify-center lg:justify-end">
               <div className="relative mr-10  w-full max-w-[500px] aspect-square rounded-lg overflow-hidden bg-muted">
                 <img
-                  src="https://drive.google.com/uc?export=view&id=1E3BPWBakpLu5LjdKWk6n4vbZB20X7go5"
+                  src="https://asset.cloudinary.com/dwdyrv73w/a4ae20b37dc003f323ee691a3f233d57"
                   alt="Students enjoying interactive quizzes"
                   className="object-cover w-full h-full"
                 />
