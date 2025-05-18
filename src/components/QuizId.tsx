@@ -1,4 +1,4 @@
-"use client";
+ 
 
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,9 @@ import {
   fetchQuizzes,
   submitQuiz,
 } from "@/store/quizSlice";
-// import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-// TypeScript interfaces
+import { motion } from "framer-motion";
+import QuizLoader from "./QuizLoader";
+
 interface Option {
   id: number;
   optionText: string;
@@ -81,6 +81,7 @@ interface DisplayQuiz {
   questions: number;
   ageGroup: string;
 }
+
 interface SelectedAnswer {
   questionId: number;
   selectedOptionId?: number;
@@ -138,7 +139,7 @@ const QuizId: React.FC = () => {
       topic: quiz.topicName,
       subtopic: quiz.subtopicName,
       questions: questions.length,
-      ageGroup: "14+", // Placeholder
+      ageGroup: "14+",
     };
   }, [quizzes, quizId, questions.length]);
 
@@ -172,7 +173,7 @@ const QuizId: React.FC = () => {
     return () => clearInterval(timer);
   }, [quizStarted, timeLeft, quizCompleted]);
 
-  // start quiz
+  // Start quiz
   const startQuiz = () => {
     if (questions.length === 0) return;
     setQuizStarted(true);
@@ -205,18 +206,6 @@ const QuizId: React.FC = () => {
       setCurrentQuestion(currentQuestion - 1);
     }
   };
-  // const getSelectedAnswers = () => {
-  //   const answers = Object.entries(selectedAnswers).map(
-  //     ([questionId, selectedOptionId]) => ({
-  //       questionId: Number(questionId),
-  //       selectedOptionId: Number(selectedOptionId),
-  //     })
-  //   );
-  //   return {
-  //     quizId: Number(quizId) || 0,
-  //     answers,
-  //   };
-  // };
 
   const getSelectedAnswers = (): QuizSubmissionPayload => {
     const answers: SelectedAnswer[] = [];
@@ -247,9 +236,8 @@ const QuizId: React.FC = () => {
     };
   };
 
-  // submit quiz :
+  // Submit quiz
   const handleSubmitQuiz = () => {
-    console.log("selected answer", getSelectedAnswers());
     const answer = getSelectedAnswers();
     dispatch(submitQuiz(answer)).then((result) => {
       if (submitQuiz.fulfilled.match(result)) {
@@ -258,14 +246,12 @@ const QuizId: React.FC = () => {
         setIsSubmitDialogOpen(false);
       } else if (submitQuiz.rejected.match(result)) {
         console.error("Quiz submission failed:", result.error.message);
-        // Optionally show an error message to the user
       }
     });
   };
 
   const calculateScore = useMemo(() => {
     if (quizSubmission) {
-      // Use API response if available
       return {
         score: quizSubmission.score || 0,
         total: quizSubmission.totalQuestions,
@@ -286,7 +272,6 @@ const QuizId: React.FC = () => {
           correctCount++;
         }
       } else if (question.questionType === "FILL_BLANK") {
-        // Assuming backend provides correctAnswer for FILL_BLANK
         const userAnswer = fillBlankAnswers[question.id]?.toLowerCase().trim();
         const correctAnswer = question.correctAnswer?.toLowerCase().trim();
         if (userAnswer && correctAnswer && userAnswer === correctAnswer) {
@@ -311,282 +296,408 @@ const QuizId: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="container py-8">Loading...</div>;
+    return <QuizLoader />
   }
 
   if (error) {
-    return <div className="container py-8">Error: {error}</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-red-600 text-lg font-medium"
+        >
+          Error: {error}
+        </motion.div>
+      </div>
+    );
   }
 
   if (!quizMeta.id || quizzes.length === 0) {
-    return <div className="container py-8">Quiz not found.</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-gray-700 text-lg font-medium"
+        >
+          Quiz not found.
+        </motion.div>
+      </div>
+    );
   }
 
-  //* agar quiz start nahi hua hai to ye dikhega
+  // Quiz start screen
   if (!quizStarted) {
     return (
-      <div className="container py-8 w-1/4 ">
-        <div className="mb-6">
-          <Link
-            to="/quizzes"
-            className="flex items-center text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Quizzes
-          </Link>
-        </div>
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap gap-2 justify-center mb-5">
-              <Badge>{quizMeta.topic}</Badge>
-              <Badge>{quizMeta.subtopic}</Badge>
-              <Badge
-                variant={
-                  quizMeta.difficulty === "Medium" ? "default" : "outline"
-                }
-                className={
-                  quizMeta.difficulty === "Medium" ? "bg-orange-500" : ""
-                }
+      <div className="flex justify-center   min-h-full pt-12 bg-gray-50 px-2">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-full max-w-2xl"
+        >
+           
+           <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-6"
+                >
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <Link to="/quizzes">
+                      <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
+                      <span className="   text-teal-600 hover:text-teal-700 font-medium">Back to Topics</span>
+                    </Link>
+                  </Button>
+                </motion.div>
+          <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
+            <CardHeader className="text-center">
+              <div className="flex flex-wrap gap-2 justify-center mb-4">
+                <Badge className="bg-teal-100 text-teal-800 border-teal-300">
+                  {quizMeta.topic}
+                </Badge>
+                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300">
+                  {quizMeta.subtopic}
+                </Badge>
+                <Badge
+                  variant={
+                    quizMeta.difficulty === "Medium" ? "default" : "outline"
+                  }
+                  className={
+                    quizMeta.difficulty === "Easy"
+                      ? "bg-green-100 text-green-800 border-green-300"
+                      : quizMeta.difficulty === "Medium"
+                      ? "bg-orange-100 text-orange-800 border-orange-300"
+                      : "bg-purple-100 text-purple-800 border-purple-300"
+                  }
+                >
+                  {quizMeta.difficulty}
+                </Badge>
+                <Badge className="bg-gray-100 text-gray-800 border-gray-300">
+                  {quizMeta.ageGroup}
+                </Badge>
+              </div>
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                {quizMeta.title}
+              </CardTitle>
+              <CardDescription className="text-gray-600 text-base mt-2">
+                {quizMeta.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 text-gray-700">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-teal-600" />
+                  <span className="text-sm font-medium">{quizMeta.timeLimit}</span>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <span className="text-sm font-medium">
+                    {quizMeta.questions} Questions
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                onClick={startQuiz}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-lg py-3 text-lg font-semibold transition-transform hover:scale-105"
+                disabled={questions.length === 0}
               >
-                {quizMeta.difficulty}
-              </Badge>
-              <Badge>{quizMeta.ageGroup}</Badge>
-            </div>
-            <CardTitle className="text-2xl">{quizMeta.title}</CardTitle>
-            <CardDescription>{quizMeta.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{quizMeta.timeLimit}</span>
-              </div>
-              <div className="flex justify-end   gap-2">
-                <span className="text-sm ">{quizMeta.questions} Questions</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={startQuiz}
-              className="w-full"
-              disabled={questions.length === 0}
-            >
-              Start Quiz
-            </Button>
-          </CardFooter>
-        </Card>
+                Start Quiz
+              </Button>
+            </CardFooter>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
-  // agar result found hua hai to ye dikhega
+  // Results screen
   if (showResults) {
     return (
-      <div className="container py-8">
-        <div className="mb-6">
-          <Link
-            to="/quizzes"
-            className="flex items-center text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Quizzes
-          </Link>
-        </div>
-        <Card className="max-w-3xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Quiz Results</CardTitle>
-            <CardDescription>{quizMeta.title}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold">
-                {calculateScore.score} / {calculateScore.total}
-              </h2>
-              <p className="text-muted-foreground">Your Score</p>
-            </div>
-            <Progress value={calculateScore.percentage} className="h-3" />
-            <p className="text-center text-sm text-muted-foreground">
-              You scored {calculateScore.percentage}% on this quiz
-            </p>
-            <Separator />
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Question Review</h3>
-              {questions.map((question, index) => (
-                <div key={question.id} className="border rounded-lg p-4">
-                  <div className="flex items-start gap-2">
-                    {question.questionType === "MCQ" ||
-                    question.questionType === "TRUE_FALSE" ? (
-                      question.options.find((opt) => opt.isCorrect)?.id ===
-                      Number(selectedAnswers[question.id]) ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+      <div className="flex justify-center items-center min-h-full pt-12 bg-gray-50 px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-2xl"
+        >
+           <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-6"
+                >
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <Link to="/quizzes">
+                      <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
+                      <span className="   text-teal-600 hover:text-teal-700 font-medium">Back to Topics</span>
+                    </Link>
+                  </Button>
+                </motion.div>
+          <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                Quiz Results
+              </CardTitle>
+              <CardDescription className="text-gray-600 text-base">
+                {quizMeta.title}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-5xl font-bold text-gray-900">
+                  {calculateScore.score} / {calculateScore.total}
+                </h2>
+                <p className="text-gray-600 mt-2 text-lg">Your Score</p>
+              </div>
+              <Progress
+                value={calculateScore.percentage}
+                className="h-4 rounded-full bg-gray-200"
+                indicatorClassName="bg-teal-600"
+              />
+              <p className="text-center text-base text-gray-600">
+                You scored {calculateScore.percentage}% on this quiz
+              </p>
+              <Separator />
+              <div className="space-y-4">
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Quiz Review go to History 
+                </h3>
+                {questions.map((question, index) => (
+                  <motion.div
+                    key={question.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="border border-gray-200 rounded-lg p-4 bg-gray-50 shadow-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      {question.questionType === "MCQ" ||
+                      question.questionType === "TRUE_FALSE" ? (
+                        question.options.find((opt) => opt.isCorrect)?.id ===
+                        Number(selectedAnswers[question.id]) ? (
+                          <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-6 w-6 text-red-600 mt-0.5" />
+                        )
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
-                      )
-                    ) : (
-                      (fillBlankAnswers[question.id]?.toLowerCase() ===
-                        "oop" && (
-                        <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                      )) || <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
-                    )}
-                    <div>
-                      <p className="font-medium">
-                        Question {index + 1}: {question.questionText}
-                      </p>
-                      <div className="mt-2 text-sm">
-                        <p>
-                          Your answer:{" "}
-                          <span
-                            className={
-                              question.questionType === "MCQ" ||
+                        (fillBlankAnswers[question.id]?.toLowerCase() ===
+                          "oop" && (
+                          <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
+                        )) || (
+                          <XCircle className="h-6 w-6 text-red-600 mt-0.5" />
+                        )
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900 text-lg">
+                          Question {index + 1}: {question.questionText}
+                        </p>
+                        <div className="mt-2 text-base text-gray-700">
+                          <p>
+                            Your answer:{" "}
+                            <span
+                              className={
+                                question.questionType === "MCQ" ||
+                                question.questionType === "TRUE_FALSE"
+                                  ? question.options.find(
+                                      (opt) => opt.isCorrect
+                                    )?.id ===
+                                    Number(selectedAnswers[question.id])
+                                    ? "text-green-600 font-semibold"
+                                    : "text-red-600 font-semibold"
+                                  : fillBlankAnswers[
+                                      question.id
+                                    ]?.toLowerCase() === "oop"
+                                  ? "text-green-600 font-semibold"
+                                  : "text-red-600 font-semibold"
+                              }
+                            >
+                              {question.questionType === "MCQ" ||
+                              question.questionType === "TRUE_FALSE"
+                                ? question.options.find(
+                                    (opt) =>
+                                      opt.id ===
+                                      Number(selectedAnswers[question.id])
+                                  )?.optionText || "Not answered"
+                                : fillBlankAnswers[question.id] ||
+                                  "Not answered"}
+                            </span>
+                          </p>
+                          <p className="mt-1">
+                            Correct answer:{" "}
+                            <span className="text-green-600 font-semibold">
+                              {question.questionType === "MCQ" ||
                               question.questionType === "TRUE_FALSE"
                                 ? question.options.find((opt) => opt.isCorrect)
-                                    ?.id ===
-                                  Number(selectedAnswers[question.id])
-                                  ? "text-green-500 font-medium"
-                                  : "text-red-500 font-medium"
-                                : fillBlankAnswers[
-                                    question.id
-                                  ]?.toLowerCase() === "oop"
-                                ? "text-green-500 font-medium"
-                                : "text-red-500 font-medium"
-                            }
-                          >
-                            {question.questionType === "MCQ" ||
-                            question.questionType === "TRUE_FALSE"
-                              ? question.options.find(
-                                  (opt) =>
-                                    opt.id ===
-                                    Number(selectedAnswers[question.id])
-                                )?.optionText || "Not answered"
-                              : fillBlankAnswers[question.id] || "Not answered"}
-                          </span>
-                        </p>
-                        <p className="mt-1">
-                          Correct answer:{" "}
-                          <span className="text-green-500 font-medium">
-                            {question.questionType === "MCQ" ||
-                            question.questionType === "TRUE_FALSE"
-                              ? question.options.find((opt) => opt.isCorrect)
-                                  ?.optionText
-                              : "Not provide answer!"}
-                          </span>
-                        </p>
+                                    ?.optionText
+                                : "Not provided"}
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild>
-              <Link to="/quizzes">Browse More Quizzes</Link>
-            </Button>
-          </CardFooter>
-        </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              <Button
+                asChild
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg py-3 px-6 text-lg font-semibold transition-transform hover:scale-105"
+              >
+                <Link to="/history">History</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </motion.div>
       </div>
     );
   }
+
+  // No questions available
   if (questions.length === 0 && quizStarted) {
     return (
-      <div className="container py-8">
-        No questions available for this quiz.
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-gray-700 text-lg font-medium"
+        >
+          No questions available for this quiz.
+        </motion.div>
       </div>
     );
   }
+
   const currentQuestionData = questions[currentQuestion];
 
+  // Question screen
   return (
-    <div className="container py-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="flex justify-center  min-h-full pt-12 bg-gray-50 px-4">
+      <motion.div
+        key={currentQuestion}
+        initial={{ opacity: 0, x: currentQuestion > 0 ? 50 : -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-2xl"
+      >
         <div className="mb-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsSubmitDialogOpen(true)}
+              className="border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg transition-transform hover:scale-105"
             >
               Exit Quiz
             </Button>
-            <div className="text-sm font-medium">
+            <div className="text-sm font-semibold text-white bg-teal-600 px-4 py-2 rounded-lg">
               Time Left: {formatTime(timeLeft)}
             </div>
           </div>
-          <div className="text-sm font-medium">
+          <div className="text-sm font-semibold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg">
             Question {currentQuestion + 1} of {questions.length}
           </div>
         </div>
         <Progress
           value={((currentQuestion + 1) / questions.length) * 100}
-          className="h-2 mb-6"
+          className="h-4 rounded-full bg-gray-200 mb-6"
+          indicatorClassName="bg-teal-600"
         />
-        <Card>
+        <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
           <CardHeader>
-            <CardTitle className="text-xl">
+            <CardTitle className="text-2xl font-semibold text-gray-900">
               Question {currentQuestion + 1}:{" "}
               {currentQuestionData?.questionText || "No question"}
             </CardTitle>
           </CardHeader>
-
           <CardContent>
             {currentQuestionData?.questionType === "MCQ" ||
             currentQuestionData?.questionType === "TRUE_FALSE" ? (
               <RadioGroup
-                value={selectedAnswers[currentQuestionData.id] || ""}
+                value={
+                  selectedAnswers[currentQuestionData.id]?.toString() || ""
+                }
                 onValueChange={(value) =>
-                  handleAnswerSelect(currentQuestionData.id, value)
+                  handleAnswerSelect(currentQuestionData.id, Number(value))
                 }
                 className="space-y-3"
               >
                 {currentQuestionData.options.map((option) => (
-                  <div
+                  <motion.div
                     key={option.id}
-                    className={`flex items-center space-x-2 rounded-md border p-4 ${
-                      selectedAnswers[currentQuestionData.id] ===
-                      String(option.id)
-                        ? "border-blue-500 bg-blue-500/10"
-                        : "hover:bg-muted/50"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-center space-x-3 rounded-lg border p-4 transition-colors ${
+                      selectedAnswers[currentQuestionData.id] === option.id
+                        ? "border-teal-500 bg-teal-50"
+                        : "border-gray-200 hover:bg-gray-50"
                     }`}
                   >
                     <RadioGroupItem
-                      value={String(option.id)}
+                      value={option.id.toString()}
                       id={`option-${option.id}`}
-                      className="sr-only"
+                      className="text-teal-600"
                     />
                     <Label
                       htmlFor={`option-${option.id}`}
-                      className="flex-1 cursor-pointer text-base"
+                      className="flex-1 cursor-pointer text-lg text-gray-900"
                     >
                       {option.optionText}
                     </Label>
-                  </div>
+                  </motion.div>
                 ))}
               </RadioGroup>
             ) : currentQuestionData?.questionType === "FILL_BLANK" ? (
-              <Input
-                placeholder="Enter your answer"
-                value={fillBlankAnswers[currentQuestionData.id] || ""}
-                onChange={(e) =>
-                  handleFillBlankChange(currentQuestionData.id, e.target.value)
-                }
-                className="mt-4"
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Input
+                  placeholder="Enter your answer"
+                  value={fillBlankAnswers[currentQuestionData.id] || ""}
+                  onChange={(e) =>
+                    handleFillBlankChange(
+                      currentQuestionData.id,
+                      e.target.value
+                    )
+                  }
+                  className="mt-4 border-teal-200 focus:border-teal-600 focus:ring-teal-600 rounded-lg text-lg"
+                />
+              </motion.div>
             ) : (
-              <div>Unknown question type</div>
+              <div className="text-gray-700 text-lg">Unknown question type</div>
             )}
           </CardContent>
-
-          <CardFooter className="flex justify-between">
+          <CardFooter classNameulator: flex justify-between className="flex justify-between">  
             <Button
               variant="outline"
               onClick={goToPreviousQuestion}
               disabled={currentQuestion === 0}
+              className="border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg transition-transform hover:scale-105"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
-            <Button onClick={goToNextQuestion}>
+            <Button
+              onClick={goToNextQuestion}
+              className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-transform hover:scale-105"
+            >
               {currentQuestion === questions.length - 1 ? "Finish" : "Next"}
               {currentQuestion === questions.length - 1 ? null : (
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -598,23 +709,30 @@ const QuizId: React.FC = () => {
           open={isSubmitDialogOpen}
           onOpenChange={setIsSubmitDialogOpen}
         >
-          <AlertDialogContent className="bg-white">
+          <AlertDialogContent className="bg-white rounded-xl shadow-lg border border-gray-100">
             <AlertDialogHeader>
-              <AlertDialogTitle>Submit Quiz?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-gray-900 text-2xl font-semibold">
+                Submit Quiz?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-600 text-base">
                 Are you sure you want to submit your answers? You won’t be able
                 to change them after submission.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSubmitQuiz}>
+              <AlertDialogCancel className="border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleSubmitQuiz}
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-transform hover:scale-105"
+              >
                 Submit
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
+      </motion.div>
     </div>
   );
 };

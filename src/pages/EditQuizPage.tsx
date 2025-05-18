@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 import {
   Dialog,
   DialogContent,
@@ -24,7 +23,15 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Trash2, Edit, Plus } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  Loader2,
+  Trash2,
+  Edit,
+  Plus,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import {
   fetchTopics,
   fetchQuizById,
@@ -35,9 +42,9 @@ import {
   deleteQuestion,
   editQuiz,
 } from "@/store/quizSlice";
-
 import toast from "react-hot-toast";
 import { SearchableSelect } from "./AdminPanel";
+import QuizLoader from "@/components/QuizLoader";
 
 interface AnswerOptionOption {
   id?: number;
@@ -52,7 +59,9 @@ interface Question {
   questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
   quizId: number;
   options: AnswerOptionOption[];
-} // it Quiz Page Component
+  explanation?: string; // Added to match usage in dialogs
+}
+
 const EditQuizPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -85,6 +94,7 @@ const EditQuizPage: React.FC = () => {
       { optionText: "", isCorrect: false, optionIndex: 2 },
       { optionText: "", isCorrect: false, optionIndex: 3 },
     ],
+    explanation: "",
   });
   const [editQuestionData, setEditQuestionData] = useState<Question | null>(
     null
@@ -104,7 +114,9 @@ const EditQuizPage: React.FC = () => {
             dispatch(fetchTopics()),
           ]);
         } catch (error: any) {
-          toast.error(error || "Failed to load quiz data.");
+          toast.error(error || "Failed to load quiz data.", {
+            style: { background: "#fef2f2", color: "#dc2626" },
+          });
           navigate("/admin/quizzes");
         }
       };
@@ -117,7 +129,7 @@ const EditQuizPage: React.FC = () => {
       setEditQuizData({
         id: quiz.id,
         title: quiz.title,
-        description: quiz.description,
+        description: quiz.description || "",
         difficultyLevel: quiz.difficultyLevel,
         timeLimit: quiz.timeLimit.toString(),
         topicId: quiz.topicId.toString(),
@@ -126,7 +138,6 @@ const EditQuizPage: React.FC = () => {
     }
   }, [quiz]);
 
-  // handle edit quiz
   const handleEditQuiz = async () => {
     if (
       editQuizData &&
@@ -152,38 +163,47 @@ const EditQuizPage: React.FC = () => {
         await dispatch(
           editQuiz({ quizId: editQuizData.id, quizInfo })
         ).unwrap();
-        toast.success("Quiz updated successfully!");
+        toast.success("Quiz updated successfully!", {
+          style: { background: "#f0fdf4", color: "#15803d" },
+        });
         await dispatch(fetchQuizById(editQuizData.id));
       } catch (error: any) {
         console.error("Error updating quiz:", error);
-        toast.error(error || "Failed to update quiz. Please try again.");
+        toast.error(error || "Failed to update quiz. Please try again.", {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        });
       }
     } else {
-      toast.error("Please fill in all fields.");
+      toast.error("Please fill in all fields.", {
+        style: { background: "#fef2f2", color: "#dc2626" },
+      });
     }
   };
 
-  // handle delete quiz
   const handleDeleteQuiz = async () => {
     if (quizId) {
       try {
         await dispatch(deleteQuiz(Number(quizId))).unwrap();
-        toast.success("Quiz deleted successfully!");
+        toast.success("Quiz deleted successfully!", {
+          style: { background: "#f0fdf4", color: "#15803d" },
+        });
         navigate("/admin/quizzes");
       } catch (error: any) {
         console.error("Error deleting quiz:", error);
-        toast.error(error || "Failed to delete quiz. Please try again.");
+        toast.error(error || "Failed to delete quiz. Please try again.", {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        });
       }
     }
   };
 
-  // handle add question
   const handleAddQuestion = async () => {
     if (
       quizId &&
       newQuestion.questionText.trim() &&
-      newQuestion.options.every((opt) => opt.optionText.trim()) &&
-      newQuestion.options.some((opt) => opt.isCorrect) &&
+      (newQuestion.questionType === "FILL_BLANK" ||
+        (newQuestion.options.every((opt) => opt.optionText.trim()) &&
+          newQuestion.options.some((opt) => opt.isCorrect))) &&
       newQuestion.questionType &&
       newQuestion.quizId
     ) {
@@ -192,11 +212,12 @@ const EditQuizPage: React.FC = () => {
           quizId: Number(quizId),
           question: newQuestion,
         });
-        // return;
         await dispatch(
           addQuestion({ quizId: Number(quizId), question: newQuestion })
         ).unwrap();
-        toast.success("Question added successfully!");
+        toast.success("Question added successfully!", {
+          style: { background: "#f0fdf4", color: "#15803d" },
+        });
         setNewQuestion({
           questionText: "",
           questionType: "MCQ",
@@ -207,29 +228,35 @@ const EditQuizPage: React.FC = () => {
             { optionText: "", isCorrect: false, optionIndex: 2 },
             { optionText: "", isCorrect: false, optionIndex: 3 },
           ],
+          explanation: "",
         });
         setIsQuestionDialogOpen(false);
         await dispatch(fetchQuestionsByQuizId(Number(quizId)));
       } catch (error: any) {
         console.error("Error adding question:", error);
-        toast.error(error || "Failed to add question. Please try again.");
+        toast.error(error || "Failed to add question. Please try again.", {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        });
       }
     } else {
       toast.error(
-        "Please fill in all question fields correctly and select a correct option."
+        "Please fill in all question fields correctly and select a correct option.",
+        {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        }
       );
     }
   };
 
-  // handle edit question
   const handleEditQuestion = async () => {
     console.log("Edit question data:", editQuestionData);
     console.log("quizId:", quizId);
     if (
       editQuestionData &&
       editQuestionData.questionText.trim() &&
-      editQuestionData.options.every((opt) => opt.optionText.trim()) &&
-      editQuestionData.options.some((opt) => opt.isCorrect) &&
+      (editQuestionData.questionType === "FILL_BLANK" ||
+        (editQuestionData.options.every((opt) => opt.optionText.trim()) &&
+          editQuestionData.options.some((opt) => opt.isCorrect))) &&
       editQuestionData.questionType &&
       editQuestionData.quizId
     ) {
@@ -238,36 +265,43 @@ const EditQuizPage: React.FC = () => {
           questionId: editQuestionData.id,
           question: editQuestionData,
         });
-
         await dispatch(
           editQuestion({
             questionId: editQuestionData.id,
             question: editQuestionData,
           })
         ).unwrap();
-        toast.success("Question updated successfully!");
+        toast.success("Question updated successfully!", {
+          style: { background: "#f0fdf4", color: "#15803d" },
+        });
         setIsEditQuestionDialogOpen(false);
         if (quizId) {
           await dispatch(fetchQuestionsByQuizId(Number(quizId)));
         }
       } catch (error: any) {
         console.error("Error updating question:", error);
-        toast.error(error || "Failed to update question. Please try again.");
+        toast.error(error || "Failed to update question. Please try again.", {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        });
       }
     } else {
       console.log("else Edit question data:", editQuestionData);
       toast.error(
-        "Please fill in all question fields correctly and select a correct option."
+        "Please fill in all question fields correctly and select a correct option.",
+        {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        }
       );
     }
   };
 
-  // handle delete question
   const handleDeleteQuestion = async () => {
     if (deleteQuestionId !== null) {
       try {
         await dispatch(deleteQuestion(deleteQuestionId)).unwrap();
-        toast.success("Question deleted successfully!");
+        toast.success("Question deleted successfully!", {
+          style: { background: "#f0fdf4", color: "#15803d" },
+        });
         setDeleteQuestionId(null);
         setIsDeleteQuestionDialogOpen(false);
         if (quizId) {
@@ -275,7 +309,9 @@ const EditQuizPage: React.FC = () => {
         }
       } catch (error: any) {
         console.error("Error deleting question:", error);
-        toast.error(error || "Failed to delete question. Please try again.");
+        toast.error(error || "Failed to delete question. Please try again.", {
+          style: { background: "#fef2f2", color: "#dc2626" },
+        });
       }
     }
   };
@@ -295,55 +331,77 @@ const EditQuizPage: React.FC = () => {
       )
     : [];
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+//   if (loading) {
+//     return <QuizLoader />;
+//   }
 
   if (error || !editQuizData) {
     return (
-      <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error || "Quiz not found."}</AlertDescription>
-      </Alert>
+      <div className="max-w-5xl mx-auto p-8">
+        <Alert
+          variant="destructive"
+          className="rounded-lg border-red-500 bg-red-50"
+        >
+          <AlertTitle className="text-red-700">Error</AlertTitle>
+          <AlertDescription className="text-red-600">
+            {error || "Quiz not found."}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Edit Quiz</h1>
-        <Button variant="outline" asChild>
-          <Link to="/admin/quizzes">Back to Quizzes</Link>
-        </Button>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-5xl mx-auto p-8 bg-gray-50"
+    >
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Edit Quiz</h1>
+        <motion.div whileHover={{ scale: 1.05 }}>
+          <Button
+            variant="outline"
+            asChild
+            className="rounded-lg border-gray-200 hover:bg-gray-100 text-gray-700"
+          >
+            <Link to="/admin/quizzes">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to Quizzes
+            </Link>
+          </Button>
+        </motion.div>
       </div>
 
       {/* Edit Quiz Form */}
-      <Card className="mb-6">
+      <Card className="mb-8 bg-white rounded-2xl shadow-lg border border-gray-100">
         <CardHeader>
-          <CardTitle>Quiz Information</CardTitle>
+          <CardTitle className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+            Quiz Information
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="edit-quiz-title" className="mb-2">
-                Title
-              </Label>
+        <CardContent className="p-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* <div className="relative">
               <Input
                 id="edit-quiz-title"
                 value={editQuizData.title}
                 onChange={(e) =>
                   setEditQuizData({ ...editQuizData, title: e.target.value })
                 }
+                className="mb-4 w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
+                required
               />
-            </div>
-            <div>
-              <Label htmlFor="edit-quiz-description" className="mb-2">
-                Description
+              <Label
+                htmlFor="edit-quiz-title"
+                className="absolute left-15 -top-6 text-sm text-grey-500"
+              >
+                Title
               </Label>
+              <BookOpen className="absolute  left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative">
               <Input
                 id="edit-quiz-description"
                 value={editQuizData.description}
@@ -353,12 +411,18 @@ const EditQuizPage: React.FC = () => {
                     description: e.target.value,
                   })
                 }
+                className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
+                required
               />
-            </div>
-            <div>
-              <Label htmlFor="edit-quiz-difficulty" className="mb-2">
-                Difficulty
+              <Label
+                htmlFor="edit-quiz-description"
+                className="absolute left-15 -top-6 text-sm text-grey-500 "
+              >
+                Description
               </Label>
+              <BookOpen className="absolute left-3 top-1/3  transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative">
               <Select
                 value={editQuizData.difficultyLevel}
                 onValueChange={(value) =>
@@ -368,20 +432,33 @@ const EditQuizPage: React.FC = () => {
                   })
                 }
               >
-                <SelectTrigger id="edit-quiz-difficulty">
+                <SelectTrigger
+                  id="edit-quiz-difficulty"
+                  className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12 text-gray-800 pl-10"
+                >
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
-                <SelectContent className="z-[1000] bg-white">
-                  <SelectItem value="EASY">Easy</SelectItem>
-                  <SelectItem value="MEDIUM">Medium</SelectItem>
-                  <SelectItem value="HARD">Hard</SelectItem>
+                <SelectContent className="bg-white rounded-lg shadow-lg z-[1000]">
+                  <SelectItem value="EASY" className="hover:bg-blue-100">
+                    Easy
+                  </SelectItem>
+                  <SelectItem value="MEDIUM" className="hover:bg-blue-100">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="HARD" className="hover:bg-blue-100">
+                    Hard
+                  </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label htmlFor="edit-quiz-time-limit" className="mb-2">
-                Time Limit (minutes)
+              <Label
+                htmlFor="edit-quiz-difficulty"
+                className="absolute left-15 -top-6 text-sm text-grey-500"
+              >
+                Difficulty
               </Label>
+              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative">
               <Input
                 id="edit-quiz-time-limit"
                 type="number"
@@ -392,126 +469,276 @@ const EditQuizPage: React.FC = () => {
                     timeLimit: e.target.value,
                   })
                 }
+                className="w-full rounded-lg  border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
+                required
+              />
+              <Label
+                htmlFor="edit-quiz-time-limit"
+                className="absolute left-15 -top-6 text-sm text-grey-500"
+              >
+                Time Limit (minutes)
+              </Label>
+              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div> */}
+            <div className="relative">
+              <Input
+                id="edit-quiz-title"
+                value={editQuizData.title}
+                onChange={(e) =>
+                  setEditQuizData({ ...editQuizData, title: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800 py-0 box-border"
+                placeholder="Enter quiz title"
+                required
+              />
+              <Label
+                htmlFor="edit-quiz-title"
+                className="absolute left-3 -top-6 text-sm text-gray-500"
+              >
+                Title
+              </Label>
+              <BookOpen className="absolute left-3 top-[calc(50%+3px)] transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative">
+              <Input
+                id="edit-quiz-description"
+                value={editQuizData.description}
+                onChange={(e) =>
+                  setEditQuizData({
+                    ...editQuizData,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800 py-0 box-border "
+                placeholder="Enter quiz description"
+                required
+              />
+              <Label
+                htmlFor="edit-quiz-description"
+                className="absolute left-3 -top-6 text-sm text-gray-500"
+              >
+                Description
+              </Label>
+              <BookOpen className="absolute left-3 top-[calc(50%+3px)] transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative mt-3">
+              <Select
+                value={editQuizData.difficultyLevel}
+                onValueChange={(value) =>
+                  setEditQuizData({
+                    ...editQuizData,
+                    difficultyLevel: value as "EASY" | "MEDIUM" | "HARD",
+                  })
+                }
+              >
+                <SelectTrigger
+                  id="edit-quiz-difficulty"
+                  className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12 text-gray-800 pl-10 py-0 box-border"
+                >
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-white rounded-lg shadow-lg z-[1000]">
+                  <SelectItem value="EASY" className="hover:bg-blue-100">
+                    Easy
+                  </SelectItem>
+                  <SelectItem value="MEDIUM" className="hover:bg-blue-100">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="HARD" className="hover:bg-blue-100">
+                    Hard
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Label
+                htmlFor="edit-quiz-difficulty"
+                className="absolute left-3 -top-6 text-sm text-gray-500"
+              >
+                Difficulty
+              </Label>
+              <BookOpen className="absolute left-3 top-[calc(40%)] transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div className="relative mt-3">
+              <Input
+                id="edit-quiz-time-limit"
+                type="number"
+                value={editQuizData.timeLimit}
+                onChange={(e) =>
+                  setEditQuizData({
+                    ...editQuizData,
+                    timeLimit: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800 py-0 box-border"
+                placeholder="Enter time limit (minutes)"
+                required
+              />
+              <Label
+                htmlFor="edit-quiz-time-limit"
+                className="absolute left-3 -top-6 text-sm text-gray-500 "
+              >
+                Time Limit (minutes)
+              </Label>
+              <BookOpen className="absolute left-3 top-[calc(50%+3px)] transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <div>
+              <SearchableSelect
+                options={topics.map((topic) => ({
+                  id: topic.id,
+                  name: topic.name,
+                }))}
+                value={editQuizData.topicId}
+                onChange={(value) =>
+                  setEditQuizData({
+                    ...editQuizData,
+                    topicId: value,
+                    subtopicId: "",
+                  })
+                }
+                placeholder="Select topic"
+                label="Topic"
+                id="edit-quiz-topic"
+                className="w-full rounded-lg  border-gray-200 focus:ring-2 focus:ring-blue-500 h-12 text-gray-400"
               />
             </div>
-            <SearchableSelect
-              options={topics.map((topic) => ({
-                id: topic.id,
-                name: topic.name,
-              }))}
-              value={editQuizData.topicId}
-              onChange={(value) =>
-                setEditQuizData({
-                  ...editQuizData,
-                  topicId: value,
-                  subtopicId: "",
-                })
-              }
-              placeholder="Select topic"
-              label="Topic"
-              id="edit-quiz-topic"
-            />
-            <SearchableSelect
-              options={filteredSubtopicsForEdit.map((subtopic) => ({
-                id: subtopic.id,
-                name: subtopic.name,
-              }))}
-              value={editQuizData.subtopicId}
-              onChange={(value) =>
-                setEditQuizData({ ...editQuizData, subtopicId: value })
-              }
-              placeholder="Select subtopic"
-              label="Subtopic"
-              id="edit-quiz-subtopic"
-            />
-            <div className="flex gap-4">
-              <Button onClick={handleEditQuiz}>Save Changes</Button>
-              <Button
-                variant="destructive"
-                onClick={() => setIsDeleteQuizDialogOpen(true)}
-              >
-                Delete Quiz
-              </Button>
+            <div>
+              <SearchableSelect
+                options={filteredSubtopicsForEdit.map((subtopic) => ({
+                  id: subtopic.id,
+                  name: subtopic.name,
+                }))}
+                value={editQuizData.subtopicId}
+                onChange={(value) =>
+                  setEditQuizData({ ...editQuizData, subtopicId: value })
+                }
+                placeholder="Select subtopic"
+                label="Subtopic"
+                id="edit-quiz-subtopic"
+                className="w-full rounded-lg text-gray-400 border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
+              />
+            </div>
+            <div className="sm:col-span-2 flex gap-4">
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  onClick={handleEditQuiz}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-6 py-3"
+                >
+                  Save Changes
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsDeleteQuizDialogOpen(true)}
+                  className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg px-6 py-3"
+                >
+                  Delete Quiz
+                </Button>
+              </motion.div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Questions Section */}
-      <Card>
+      <Card className="bg-white rounded-2xl shadow-lg border border-gray-100">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Questions</CardTitle>
-            <Button onClick={() => setIsQuestionDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Question
-            </Button>
+          <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+            <CardTitle className="text-xl font-semibold text-gray-800">
+              Questions
+            </CardTitle>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Button
+                onClick={() => setIsQuestionDialogOpen(true)}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-4 py-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Question
+              </Button>
+            </motion.div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {questions.length === 0 ? (
-            <p>No questions found for this quiz.</p>
-          ) : (
-            <div className="space-y-4">
-              {questions.map((question, index) => (
-                <div
-                  key={question.id}
-                  className="border p-4 rounded-lg  shadow-sm bg-gray-50"
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg mb-4">
+                No questions found for this quiz.
+              </p>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  onClick={() => setIsQuestionDialogOpen(true)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-6 py-3"
                 >
-                  {/* question heaer */}
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add a Question
+                </Button>
+              </motion.div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {questions.map((question, index) => (
+                <motion.div
+                  key={question.id}
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className=" text-left font-semibold text-lg">
-                        Q{index + 1}, {question.questionText}
+                      <p className="text-left font-semibold text-lg text-gray-800">
+                        Q{index + 1}. {question.questionText}
                       </p>
                       <p className="text-sm text-gray-500 text-left mt-1">
                         Type: {question.questionType}
                       </p>
                     </div>
-
-                    {/* action buttons */}
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditQuestionData({
-                            id: question.id,
-                            questionText: question.questionText,
-                            quizId: Number(quizId),
-                            questionType: question.questionType,
-                            options: [...question.options],
-                          });
-                          setIsEditQuestionDialogOpen(true);
-                        }}
-                      >
-                        <Edit className="h-4 w-4 mr-2" /> Edit
-                      </Button>
-                      <Button
-                        className="bg-red-500 text-white hover:bg-red-600"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setDeleteQuestionId(question.id);
-                          setIsDeleteQuestionDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" /> Delete
-                      </Button>
+                    <div className="flex gap-3">
+                      <motion.div whileHover={{ scale: 1.1 }}>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            setEditQuestionData({
+                              id: question.id,
+                              questionText: question.questionText,
+                              quizId: Number(quizId),
+                              questionType: question.questionType,
+                              options: [...question.options],
+                              explanation: question.explanation || "",
+                            });
+                            setIsEditQuestionDialogOpen(true);
+                          }}
+                          className="rounded-full bg-blue-100 hover:bg-blue-200 transition-all duration-200"
+                        >
+                          <Edit className="h-4 w-4 text-blue-500" />
+                        </Button>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1 }}>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => {
+                            setDeleteQuestionId(question.id);
+                            setIsDeleteQuestionDialogOpen(true);
+                          }}
+                          className="rounded-full bg-red-100 hover:bg-red-200 transition-all duration-200"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </motion.div>
                     </div>
                   </div>
-                  {/* question options */}
-
-                  <div className="mt-3">
-                    <ul className="space-y-2">
+                  <div className="mt-4">
+                    <ul className="space-y-3">
                       {question.options.map((option, optIndex) => {
-                        const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
+                        const optionLabel = String.fromCharCode(97 + optIndex);
                         return (
                           <li
                             key={option.optionIndex}
                             className="flex items-center text-left"
                           >
                             <span
-                              className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 text-sm font-medium ${
+                              className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-3 text-sm font-medium ${
                                 option.isCorrect
                                   ? "bg-green-100 text-green-700"
                                   : "bg-gray-200 text-gray-700"
@@ -522,7 +749,7 @@ const EditQuizPage: React.FC = () => {
                             <span
                               className={
                                 option.isCorrect
-                                  ? "text-green-600"
+                                  ? "text-green-600 font-medium"
                                   : "text-gray-800"
                               }
                             >
@@ -532,8 +759,14 @@ const EditQuizPage: React.FC = () => {
                         );
                       })}
                     </ul>
+                    {question.explanation && (
+                      <p className="mt-4 text-sm text-gray-600">
+                        <span className="font-semibold">Explanation:</span>{" "}
+                        {question.explanation}
+                      </p>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
@@ -545,197 +778,46 @@ const EditQuizPage: React.FC = () => {
         open={isQuestionDialogOpen}
         onOpenChange={setIsQuestionDialogOpen}
       >
-        <DialogContent className="bg-white z-[101]">
-          <DialogHeader>
-            <DialogTitle>Add New Question</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="question-text" className="mb-2">
-                Question Text
-              </Label>
-              <Input
-                id="question-text"
-                value={newQuestion.questionText}
-                onChange={(e) =>
-                  setNewQuestion({
-                    ...newQuestion,
-                    questionText: e.target.value,
-                  })
-                }
-                placeholder="Enter question text"
-              />
-            </div>
-            <div>
-              <Label htmlFor="question-type" className="mb-2">
-                Question Type
-              </Label>
-              <Select
-                value={newQuestion.questionType}
-                onValueChange={(value) =>
-                  setNewQuestion({
-                    ...newQuestion,
-                    questionType: value as "FILL_BLANK" | "TRUE_FALSE" | "MCQ",
-                    options:
-                      value === "TRUE_FALSE"
-                        ? [
-                            {
-                              optionText: "True",
-                              isCorrect: false,
-                              optionIndex: 0,
-                            },
-                            {
-                              optionText: "False",
-                              isCorrect: false,
-                              optionIndex: 1,
-                            },
-                          ]
-                        : [
-                            {
-                              optionText: "",
-                              isCorrect: false,
-                              optionIndex: 0,
-                            },
-                            {
-                              optionText: "",
-                              isCorrect: false,
-                              optionIndex: 1,
-                            },
-                            {
-                              optionText: "",
-                              isCorrect: false,
-                              optionIndex: 2,
-                            },
-                            {
-                              optionText: "",
-                              isCorrect: false,
-                              optionIndex: 3,
-                            },
-                          ],
-                  })
-                }
-              >
-                <SelectTrigger id="question-type">
-                  <SelectValue placeholder="Select question type" />
-                </SelectTrigger>
-                <SelectContent className="z-[1000] bg-white">
-                  <SelectItem value="MCQ">Multiple Choice (MCQ)</SelectItem>
-                  <SelectItem value="TRUE_FALSE">True/False</SelectItem>
-                  <SelectItem value="FILL_BLANK">Fill in the Blank</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="explanation" className="mb-2">
-                Explanation (Optional)
-              </Label>
-              <Input
-                id="explanation"
-                value={newQuestion.explanation || ""}
-                onChange={(e) =>
-                  setNewQuestion({
-                    ...newQuestion,
-                    explanation: e.target.value,
-                  })
-                }
-                placeholder="Enter explanation"
-              />
-            </div>
-            {newQuestion.questionType !== "FILL_BLANK" && (
-              <>
-                {newQuestion.options.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label
-                        htmlFor={`option-${index}`}
-                        className="mb-2"
-                      >{`Option ${index + 1}`}</Label>
-                      <Input
-                        id={`option-${index}`}
-                        value={option.optionText}
-                        onChange={(e) => {
-                          const newOptions = [...newQuestion.options];
-                          newOptions[index] = {
-                            ...newOptions[index],
-                            optionText: e.target.value,
-                          };
-                          setNewQuestion({
-                            ...newQuestion,
-                            options: newOptions,
-                          });
-                        }}
-                        placeholder={`Enter option ${index + 1}`}
-                        disabled={newQuestion.questionType === "TRUE_FALSE"}
-                      />
-                    </div>
-                    <div>
-                      <Label className="mb-2">Correct</Label>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={option.isCorrect}
-                          onChange={(e) => {
-                            const newOptions = [...newQuestion.options].map(
-                              (opt, idx) => ({
-                                ...opt,
-                                isCorrect:
-                                  idx === index ? e.target.checked : false,
-                              })
-                            );
-                            setNewQuestion({
-                              ...newQuestion,
-                              options: newOptions,
-                            });
-                          }}
-                          className="h-4 w-4"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-            <Button onClick={handleAddQuestion}>Add Question</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Question Dialog */}
-      <Dialog
-        open={isEditQuestionDialogOpen}
-        onOpenChange={setIsEditQuestionDialogOpen}
-      >
-        <DialogContent className="bg-white">
-          <DialogHeader>
-            <DialogTitle>Edit Question</DialogTitle>
-          </DialogHeader>
-          {editQuestionData && (
-            <div className="grid gap-4">
-              <div>
-                <Label htmlFor="edit-question-text" className="mb-2">
+        <DialogContent className="bg-white rounded-2xl shadow-xl max-w-lg backdrop-blur-sm z-[101]">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-800">
+                Add New Question
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-6 mt-4">
+              <div className="relative">
+                <Label htmlFor="question-text" className="text-gray-700 mb-2">
                   Question Text
                 </Label>
                 <Input
-                  id="edit-question-text"
-                  value={editQuestionData.questionText}
+                  id="question-text"
+                  value={newQuestion.questionText}
                   onChange={(e) =>
-                    setEditQuestionData({
-                      ...editQuestionData,
+                    setNewQuestion({
+                      ...newQuestion,
                       questionText: e.target.value,
                     })
                   }
+                  className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
                   placeholder="Enter question text"
+                  required
                 />
+                <BookOpen className="absolute left-3 top-[calc(50%+0.8rem)] transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
               <div>
-                <Label htmlFor="edit-question-type" className="mb-2">
+                <Label htmlFor="question-type" className="text-gray-700 mb-2">
                   Question Type
                 </Label>
                 <Select
-                  value={editQuestionData.questionType}
+                  value={newQuestion.questionType}
                   onValueChange={(value) =>
-                    setEditQuestionData({
-                      ...editQuestionData,
+                    setNewQuestion({
+                      ...newQuestion,
                       questionType: value as
                         | "FILL_BLANK"
                         | "TRUE_FALSE"
@@ -754,8 +836,7 @@ const EditQuizPage: React.FC = () => {
                                 optionIndex: 1,
                               },
                             ]
-                          : editQuestionData.options.length === 2
-                          ? [
+                          : [
                               {
                                 optionText: "",
                                 isCorrect: false,
@@ -776,33 +857,246 @@ const EditQuizPage: React.FC = () => {
                                 isCorrect: false,
                                 optionIndex: 3,
                               },
-                            ]
-                          : editQuestionData.options,
+                            ],
                     })
                   }
                 >
-                  <SelectTrigger id="edit-question-type">
+                  <SelectTrigger
+                    id="question-type"
+                    className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
+                  >
                     <SelectValue placeholder="Select question type" />
                   </SelectTrigger>
-                  <SelectContent className="z-[1000] bg-white">
-                    <SelectItem value="MCQ">Multiple Choice (MCQ)</SelectItem>
-                    <SelectItem value="TRUE_FALSE">True/False</SelectItem>
-                    <SelectItem value="FILL_BLANK">
+                  <SelectContent className="bg-white rounded-lg shadow-lg z-[1000]">
+                    <SelectItem value="MCQ" className="hover:bg-blue-100">
+                      Multiple Choice (MCQ)
+                    </SelectItem>
+                    <SelectItem
+                      value="TRUE_FALSE"
+                      className="hover:bg-blue-100"
+                    >
+                      True/False
+                    </SelectItem>
+                    <SelectItem
+                      value="FILL_BLANK"
+                      className="hover:bg-blue-100"
+                    >
                       Fill in the Blank
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {editQuestionData.questionType !== "FILL_BLANK" && (
-                <>
-                  {editQuestionData.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={`edit-option-${index}`}
-                          className="mb-2"
-                        >{`Option ${index + 1}`}</Label>
+              {(newQuestion.questionType === "FILL_BLANK" ||
+                newQuestion.questionType === "MCQ") && (
+                <div className="space-y-4">
+                  <Label className="text-gray-700">Options</Label>
+                  {newQuestion.options.map((option, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <Input
+                        id={`option-${index}`}
+                        value={option.optionText}
+                        onChange={(e) => {
+                          const newOptions = [...newQuestion.options];
+                          newOptions[index] = {
+                            ...newOptions[index],
+                            optionText: e.target.value,
+                          };
+                          setNewQuestion({
+                            ...newQuestion,
+                            options: newOptions,
+                          });
+                        }}
+                        className="rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
+                        placeholder={`Option ${index + 1}`}
+                        disabled={newQuestion.questionType === "TRUE_FALSE"}
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={option.isCorrect}
+                          onChange={(e) => {
+                            const newOptions = [...newQuestion.options].map(
+                              (opt, idx) => ({
+                                ...opt,
+                                isCorrect:
+                                  idx === index ? e.target.checked : false,
+                              })
+                            );
+                            setNewQuestion({
+                              ...newQuestion,
+                              options: newOptions,
+                            });
+                          }}
+                          className="h-5 w-5 text-blue-500 rounded focus:ring-blue-500"
+                        />
+                        <Label className="text-gray-700">Correct</Label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  onClick={handleAddQuestion}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-6 py-3"
+                >
+                  Add Question
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Question Dialog */}
+      <Dialog
+        open={isEditQuestionDialogOpen}
+        onOpenChange={setIsEditQuestionDialogOpen}
+      >
+        <DialogContent className="bg-white rounded-2xl shadow-xl max-w-lg backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-800">
+                Edit Question
+              </DialogTitle>
+            </DialogHeader>
+            {editQuestionData && (
+              <div className="grid gap-6 mt-4">
+                <div className="relative">
+                  <Input
+                    id="edit-question-text"
+                    value={editQuestionData.questionText}
+                    onChange={(e) =>
+                      setEditQuestionData({
+                        ...editQuestionData,
+                        questionText: e.target.value,
+                      })
+                    }
+                    className="peer w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12"
+                    required
+                  />
+                  <Label
+                    htmlFor="edit-question-text"
+                    className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 transition-all duration-200 text-base peer-focus:-top-6 peer-focus:text-sm peer-focus:text-blue-500 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-6 peer-not-placeholder-shown:text-sm peer-not-placeholder-shown:text-blue-500"
+                  >
+                    Question Text
+                  </Label>
+                  <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="edit-question-type"
+                    className="text-gray-700 mb-2"
+                  >
+                    Question Type
+                  </Label>
+                  <Select
+                    value={editQuestionData.questionType}
+                    onValueChange={(value) =>
+                      setEditQuestionData({
+                        ...editQuestionData,
+                        questionType: value as
+                          | "FILL_BLANK"
+                          | "TRUE_FALSE"
+                          | "MCQ",
+                        options:
+                          value === "TRUE_FALSE"
+                            ? [
+                                {
+                                  optionText: "True",
+                                  isCorrect: false,
+                                  optionIndex: 0,
+                                },
+                                {
+                                  optionText: "False",
+                                  isCorrect: false,
+                                  optionIndex: 1,
+                                },
+                              ]
+                            : value === "FILL_BLANK"
+                            ? []
+                            : editQuestionData.options.length >= 4
+                            ? editQuestionData.options
+                            : [
+                                {
+                                  optionText: "",
+                                  isCorrect: false,
+                                  optionIndex: 0,
+                                },
+                                {
+                                  optionText: "",
+                                  isCorrect: false,
+                                  optionIndex: 1,
+                                },
+                                {
+                                  optionText: "",
+                                  isCorrect: false,
+                                  optionIndex: 2,
+                                },
+                                {
+                                  optionText: "",
+                                  isCorrect: false,
+                                  optionIndex: 3,
+                                },
+                              ],
+                      })
+                    }
+                  >
+                    <SelectTrigger
+                      id="edit-question-type"
+                      className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
+                    >
+                      <SelectValue placeholder="Select question type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white rounded-lg shadow-lg z-[1000]">
+                      <SelectItem value="MCQ" className="hover:bg-blue-100">
+                        Multiple Choice (MCQ)
+                      </SelectItem>
+                      <SelectItem
+                        value="TRUE_FALSE"
+                        className="hover:bg-blue-100"
+                      >
+                        True/False
+                      </SelectItem>
+                      <SelectItem
+                        value="FILL_BLANK"
+                        className="hover:bg-blue-100"
+                      >
+                        Fill in the Blank
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="edit-explanation"
+                    value={editQuestionData.explanation || ""}
+                    onChange={(e) =>
+                      setEditQuestionData({
+                        ...editQuestionData,
+                        explanation: e.target.value,
+                      })
+                    }
+                    className="peer w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12"
+                  />
+                  <Label
+                    htmlFor="edit-explanation"
+                    className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 transition-all duration-200 text-base peer-focus:-top-6 peer-focus:text-sm peer-focus:text-blue-500 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-not-placeholder-shown:-top-6 peer-not-placeholder-shown:text-sm peer-not-placeholder-shown:text-blue-500"
+                  >
+                    Explanation (Optional)
+                  </Label>
+                  <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+                {editQuestionData.questionType !== "FILL_BLANK" && (
+                  <div className="space-y-4">
+                    <Label className="text-gray-700">Options</Label>
+                    {editQuestionData.options.map((option, index) => (
+                      <div key={index} className="flex items-center gap-3">
                         <Input
                           id={`edit-option-${index}`}
                           value={option.optionText}
@@ -817,15 +1111,13 @@ const EditQuizPage: React.FC = () => {
                               options: newOptions,
                             });
                           }}
-                          placeholder={`Enter option ${index + 1}`}
+                          className="rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
+                          placeholder={`Option ${index + 1}`}
                           disabled={
                             editQuestionData.questionType === "TRUE_FALSE"
                           }
                         />
-                      </div>
-                      <div>
-                        <Label className="mb-2">Correct</Label>
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={option.isCorrect}
@@ -842,17 +1134,25 @@ const EditQuizPage: React.FC = () => {
                                 options: newOptions,
                               });
                             }}
-                            className="h-4 w-4"
+                            className="h-5 w-5 text-blue-500 rounded focus:ring-blue-500"
                           />
+                          <Label className="text-gray-700">Correct</Label>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </>
-              )}
-              <Button onClick={handleEditQuestion}>Save Changes</Button>
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Button
+                    onClick={handleEditQuestion}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-6 py-3"
+                  >
+                    Save Changes
+                  </Button>
+                </motion.div>
+              </div>
+            )}
+          </motion.div>
         </DialogContent>
       </Dialog>
 
@@ -861,29 +1161,42 @@ const EditQuizPage: React.FC = () => {
         open={isDeleteQuestionDialogOpen}
         onOpenChange={setIsDeleteQuestionDialogOpen}
       >
-        <DialogContent className="bg-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <p>
-            Are you sure you want to delete this question? This action cannot be
-            undone.
-          </p>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteQuestionDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="bg-red-600"
-              onClick={handleDeleteQuestion}
-            >
-              Delete
-            </Button>
-          </DialogFooter>
+        <DialogContent className="bg-white rounded-2xl shadow-xl backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-800">
+                Confirm Delete
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-gray-600 text-lg">
+              Are you sure you want to delete this question? This action cannot
+              be undone.
+            </p>
+            <DialogFooter className="mt-6 flex gap-3">
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteQuestionDialogOpen(false)}
+                  className="rounded-lg border-gray-200 hover:bg-gray-100 text-gray-700 px-6 py-3"
+                >
+                  Cancel
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteQuestion}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg px-6 py-3"
+                >
+                  Delete
+                </Button>
+              </motion.div>
+            </DialogFooter>
+          </motion.div>
         </DialogContent>
       </Dialog>
 
@@ -892,28 +1205,45 @@ const EditQuizPage: React.FC = () => {
         open={isDeleteQuizDialogOpen}
         onOpenChange={setIsDeleteQuizDialogOpen}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <p>
-            Are you sure you want to delete this quiz? This action cannot be
-            undone.
-          </p>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteQuizDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteQuiz}>
-              Delete
-            </Button>
-          </DialogFooter>
+        <DialogContent className="bg-white rounded-2xl shadow-xl backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-800">
+                Confirm Delete
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-gray-600 text-lg">
+              Are you sure you want to delete this quiz? This action cannot be
+              undone.
+            </p>
+            <DialogFooter className="mt-6 flex gap-3">
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteQuizDialogOpen(false)}
+                  className="rounded-lg border-gray-200 hover:bg-gray-100 text-gray-700 px-6 py-3"
+                >
+                  Cancel
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteQuiz}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg px-6 py-3"
+                >
+                  Delete
+                </Button>
+              </motion.div>
+            </DialogFooter>
+          </motion.div>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 

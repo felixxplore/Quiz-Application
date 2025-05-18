@@ -16,6 +16,7 @@ import TopicDetail from "./components/TopicDetails";
 import PopularTopics from "./components/PopularTopics";
 import { FeaturedQuizzes } from "./components/FeaturedQuizzes";
 import ProtectedRoute from "./components/ProtectedRoute";
+import QuizList from "./components/QuizList";
 
 function App() {
   return (
@@ -29,17 +30,18 @@ function App() {
           {/* <Route path="/" element={<RootLayout />}> */}
           {/* <Route index element={<Home />} /> */}
           <Route path="/topics" element={<PopularTopics />} />
-          <Route path="/quizzes" element={<FeaturedQuizzes />} />
+          <Route path="/quizzes" element={<QuizList />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           {/* <Route path="/history" element={<SubmissionHistory />} /> */}
           <Route path="/topics/:topicId" element={<TopicDetail />} />
-          <Route
+        
+          <Route element={<ProtectedRoute />}>
+            <Route
             path="/admin/quizzes/edit/:quizId"
             element={<EditQuizPage />}
           />
-          <Route element={<ProtectedRoute />}>
             <Route path="/quizzes/:quizId" element={<QuizId />} />
 
             <Route path="/history" element={<QuizHistoryOverview />} />
