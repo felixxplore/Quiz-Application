@@ -52,7 +52,7 @@ const Home: FC = () => {
                 <img
                   src="https://drive.google.com/uc?export=view&id=1E3BPWBakpLu5LjdKWk6n4vbZB20X7go5"
                   alt="Students enjoying interactive quizzes"
-                  class="object-cover w-full h-full"
+                  className="object-cover w-full h-full"
                 />
               </div>
             </div>
