@@ -9,7 +9,6 @@ import { useEffect, type FC } from "react";
 import { useDispatch } from "react-redux";
 import { type AppDispatch } from "@/store/store";
 import { fetchQuizzes } from "@/store/quizSlice";
-import Navbar from "@/components/Navbar";
 
 const Home: FC = () => {
   const dispatch = useDispatch<AppDispatch>();

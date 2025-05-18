@@ -23,14 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  BookOpen,
-  ChevronLeft,
-  Loader2,
-  Trash2,
-  Edit,
-  Plus,
-} from "lucide-react";
+import { BookOpen, ChevronLeft, Trash2, Edit, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   fetchTopics,
@@ -262,12 +255,12 @@ const EditQuizPage: React.FC = () => {
     ) {
       try {
         console.log("Editing question:", {
-          questionId: editQuestionData.id,
+          questionId: editQuestionData.id ?? 0,
           question: editQuestionData,
         });
         await dispatch(
           editQuestion({
-            questionId: editQuestionData.id,
+            questionId: editQuestionData.id ?? 0,
             question: editQuestionData,
           })
         ).unwrap();
@@ -298,7 +291,7 @@ const EditQuizPage: React.FC = () => {
   const handleDeleteQuestion = async () => {
     if (deleteQuestionId !== null) {
       try {
-        await dispatch(deleteQuestion(deleteQuestionId)).unwrap();
+        await dispatch(deleteQuestion(deleteQuestionId!)).unwrap();
         toast.success("Question deleted successfully!", {
           style: { background: "#f0fdf4", color: "#15803d" },
         });
@@ -331,9 +324,9 @@ const EditQuizPage: React.FC = () => {
       )
     : [];
 
-//   if (loading) {
-//     return <QuizLoader />;
-//   }
+  if (loading) {
+    return <QuizLoader />;
+  }
 
   if (error || !editQuizData) {
     return (
@@ -383,103 +376,6 @@ const EditQuizPage: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid gap-6 sm:grid-cols-2">
-            {/* <div className="relative">
-              <Input
-                id="edit-quiz-title"
-                value={editQuizData.title}
-                onChange={(e) =>
-                  setEditQuizData({ ...editQuizData, title: e.target.value })
-                }
-                className="mb-4 w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
-                required
-              />
-              <Label
-                htmlFor="edit-quiz-title"
-                className="absolute left-15 -top-6 text-sm text-grey-500"
-              >
-                Title
-              </Label>
-              <BookOpen className="absolute  left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            <div className="relative">
-              <Input
-                id="edit-quiz-description"
-                value={editQuizData.description}
-                onChange={(e) =>
-                  setEditQuizData({
-                    ...editQuizData,
-                    description: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
-                required
-              />
-              <Label
-                htmlFor="edit-quiz-description"
-                className="absolute left-15 -top-6 text-sm text-grey-500 "
-              >
-                Description
-              </Label>
-              <BookOpen className="absolute left-3 top-1/3  transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            <div className="relative">
-              <Select
-                value={editQuizData.difficultyLevel}
-                onValueChange={(value) =>
-                  setEditQuizData({
-                    ...editQuizData,
-                    difficultyLevel: value as "EASY" | "MEDIUM" | "HARD",
-                  })
-                }
-              >
-                <SelectTrigger
-                  id="edit-quiz-difficulty"
-                  className="w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 h-12 text-gray-800 pl-10"
-                >
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent className="bg-white rounded-lg shadow-lg z-[1000]">
-                  <SelectItem value="EASY" className="hover:bg-blue-100">
-                    Easy
-                  </SelectItem>
-                  <SelectItem value="MEDIUM" className="hover:bg-blue-100">
-                    Medium
-                  </SelectItem>
-                  <SelectItem value="HARD" className="hover:bg-blue-100">
-                    Hard
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Label
-                htmlFor="edit-quiz-difficulty"
-                className="absolute left-15 -top-6 text-sm text-grey-500"
-              >
-                Difficulty
-              </Label>
-              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            <div className="relative">
-              <Input
-                id="edit-quiz-time-limit"
-                type="number"
-                value={editQuizData.timeLimit}
-                onChange={(e) =>
-                  setEditQuizData({
-                    ...editQuizData,
-                    timeLimit: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg  border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200 pl-10 h-12 text-gray-800"
-                required
-              />
-              <Label
-                htmlFor="edit-quiz-time-limit"
-                className="absolute left-15 -top-6 text-sm text-grey-500"
-              >
-                Time Limit (minutes)
-              </Label>
-              <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div> */}
             <div className="relative">
               <Input
                 id="edit-quiz-title"
@@ -597,7 +493,6 @@ const EditQuizPage: React.FC = () => {
                 placeholder="Select topic"
                 label="Topic"
                 id="edit-quiz-topic"
-                className="w-full rounded-lg  border-gray-200 focus:ring-2 focus:ring-blue-500 h-12 text-gray-400"
               />
             </div>
             <div>
@@ -613,7 +508,6 @@ const EditQuizPage: React.FC = () => {
                 placeholder="Select subtopic"
                 label="Subtopic"
                 id="edit-quiz-subtopic"
-                className="w-full rounded-lg text-gray-400 border-gray-200 focus:ring-2 focus:ring-blue-500 h-12"
               />
             </div>
             <div className="sm:col-span-2 flex gap-4">

@@ -33,6 +33,7 @@ interface Question {
   questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
   quizId: number;
   options: AnswerOptionOption[];
+  correctAnswer?: string;
 }
 
 interface Quiz {
@@ -49,6 +50,7 @@ interface Quiz {
   topic: TopicDTO | null;
   questionCount: number;
   participants: number;
+  ageGroup: string;
 }
 
 interface QuizInfo {

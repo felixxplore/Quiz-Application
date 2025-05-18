@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Routes, Route, Link, useParams } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { Button } from "@/components/ui/button";
@@ -49,14 +49,11 @@ import {
   createSubtopic,
   fetchQuizzes,
   createQuiz,
-  fetchQuizById,
-  updateQuiz,
   deleteQuiz,
-  fetchQuestionsByQuizId,
-  addQuestion,
-  editQuestion,
-  deleteQuestion,
-  editQuiz,
+  // fetchQuestionsByQuizId,
+  // addQuestion,
+  // editQuestion,
+  // editQuiz,
 } from "@/store/quizSlice";
 import {
   Popover,
@@ -466,25 +463,25 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 };
 
 // Interfaces for Question and AnswerOption
-interface AnswerOption {
-  id?: number;
-  optionText: string;
-  isCorrect: boolean;
-  optionIndex: number;
-  questionId?: number;
-}
-interface Question {
-  id?: number;
-  questionText: string;
-  questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
-  quizId: number;
-  options: AnswerOption[];
-}
+// interface AnswerOption {
+//   id?: number;
+//   optionText: string;
+//   isCorrect: boolean;
+//   optionIndex: number;
+//   questionId?: number;
+// }
+// interface Question {
+//   id?: number;
+//   questionText: string;
+//   questionType: "FILL_BLANK" | "TRUE_FALSE" | "MCQ";
+//   quizId: number;
+//   options: AnswerOption[];
+// }
 
 // Quiz List Component
 const QuizList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { quizzes, topics, questions, loading, error } = useSelector(
+  const { quizzes, topics, loading, error } = useSelector(
     (state: RootState) => state.quiz
   );
   const [newQuiz, setNewQuiz] = useState({
@@ -496,28 +493,28 @@ const QuizList: React.FC = () => {
     subtopicId: "",
   });
   const [deleteQuizId, setDeleteQuizId] = useState<number | null>(null);
-  const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);
-  const [isEditQuestionDialogOpen, setIsEditQuestionDialogOpen] =
-    useState(false);
-  const [isDeleteQuestionDialogOpen, setIsDeleteQuestionDialogOpen] =
-    useState(false);
-  const [newQuestion, setNewQuestion] = useState<Question>({
-    questionText: "",
-    questionType: "MCQ",
-    quizId: 0,
-    options: [
-      { optionText: "", isCorrect: false, optionIndex: 0 },
-      { optionText: "", isCorrect: false, optionIndex: 1 },
-      { optionText: "", isCorrect: false, optionIndex: 2 },
-      { optionText: "", isCorrect: false, optionIndex: 3 },
-    ],
-  });
-  const [editQuestionData, setEditQuestionData] = useState<Question | null>(
-    null
-  );
-  const [deleteQuestionId, setDeleteQuestionId] = useState<
-    number | undefined | null
-  >(null);
+  // const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);
+  // const [isEditQuestionDialogOpen, setIsEditQuestionDialogOpen] =
+  //   useState(false);
+  // const [isDeleteQuestionDialogOpen, setIsDeleteQuestionDialogOpen] =
+  //   useState(false);
+  // const [newQuestion, setNewQuestion] = useState<Question>({
+  //   questionText: "",
+  //   questionType: "MCQ",
+  //   quizId: 0,
+  //   options: [
+  //     { optionText: "", isCorrect: false, optionIndex: 0 },
+  //     { optionText: "", isCorrect: false, optionIndex: 1 },
+  //     { optionText: "", isCorrect: false, optionIndex: 2 },
+  //     { optionText: "", isCorrect: false, optionIndex: 3 },
+  //   ],
+  // });
+  // const [editQuestionData, setEditQuestionData] = useState<Question | null>(
+  //   null
+  // );
+  // const [deleteQuestionId, setDeleteQuestionId] = useState<
+  //   number | undefined | null
+  // >(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -567,42 +564,42 @@ const QuizList: React.FC = () => {
     }
   };
 
-  const handleEditQuiz = async () => {
-    if (
-      editQuestionData &&
-      editQuestionData.title &&
-      editQuestionData.description &&
-      editQuestionData.difficultyLevel &&
-      editQuestionData.timeLimit &&
-      editQuestionData.topicId &&
-      editQuestionData.subtopicId
-    ) {
-      const quizInfo = {
-        title: editQuestionData.title,
-        description: editQuestionData.description,
-        difficultyLevel: editQuestionData.difficultyLevel as
-          | "EASY"
-          | "MEDIUM"
-          | "HARD",
-        timeLimit: Number(editQuestionData.timeLimit),
-        topicId: Number(editQuestionData.topicId),
-        subtopicId: Number(editQuestionData.subtopicId),
-        id: Number(editQuestionData.id),
-      };
-      try {
-        await dispatch(
-          editQuiz({ quizId: editQuestionData.id, quizInfo })
-        ).unwrap();
-        toast.success("Quiz updated successfully!");
-        setIsEditQuestionDialogOpen(false);
-        await dispatch(fetchQuizzes());
-      } catch (error: any) {
-        toast.error(error || "Failed to update quiz. Please try again.");
-      }
-    } else {
-      toast.error("Please fill in all fields.");
-    }
-  };
+  // const handleEditQuiz = async () => {
+  //   if (
+  //     editQuestionData &&
+  //     editQuestionData.title &&
+  //     editQuestionData.description &&
+  //     editQuestionData.difficultyLevel &&
+  //     editQuestionData.timeLimit &&
+  //     editQuestionData.topicId &&
+  //     editQuestionData.subtopicId
+  //   ) {
+  //     const quizInfo = {
+  //       title: editQuestionData.title,
+  //       description: editQuestionData.description,
+  //       difficultyLevel: editQuestionData.difficultyLevel as
+  //         | "EASY"
+  //         | "MEDIUM"
+  //         | "HARD",
+  //       timeLimit: Number(editQuestionData.timeLimit),
+  //       topicId: Number(editQuestionData.topicId),
+  //       subtopicId: Number(editQuestionData.subtopicId),
+  //       id: Number(editQuestionData.id),
+  //     };
+  //     try {
+  //       await dispatch(
+  //         editQuiz({ quizId: editQuestionData.id, quizInfo })
+  //       ).unwrap();
+  //       toast.success("Quiz updated successfully!");
+  //       setIsEditQuestionDialogOpen(false);
+  //       await dispatch(fetchQuizzes());
+  //     } catch (error: any) {
+  //       toast.error(error || "Failed to update quiz. Please try again.");
+  //     }
+  //   } else {
+  //     toast.error("Please fill in all fields.");
+  //   }
+  // };
 
   const handleDeleteQuiz = async () => {
     if (deleteQuizId !== null) {
@@ -617,69 +614,69 @@ const QuizList: React.FC = () => {
     }
   };
 
-  const handleAddQuestion = async () => {
-    if (
-      editQuestionData &&
-      newQuestion.questionText.trim() &&
-      newQuestion.options.every((opt) => opt.optionText.trim()) &&
-      newQuestion.options.some((opt) => opt.isCorrect) &&
-      newQuestion.questionType
-    ) {
-      try {
-        await dispatch(
-          addQuestion({ quizId: editQuestionData.id, question: newQuestion })
-        ).unwrap();
-        toast.success("Question added successfully!");
-        setNewQuestion({
-          questionText: "",
-          questionType: "MCQ",
-          quizId: 0,
-          options: [
-            { optionText: "", isCorrect: false, optionIndex: 0 },
-            { optionText: "", isCorrect: false, optionIndex: 1 },
-            { optionText: "", isCorrect: false, optionIndex: 2 },
-            { optionText: "", isCorrect: false, optionIndex: 3 },
-          ],
-        });
-        setIsQuestionDialogOpen(false);
-        await dispatch(fetchQuestionsByQuizId(editQuestionData.id));
-      } catch (error: any) {
-        toast.error(error || "Failed to add question. Please try again.");
-      }
-    } else {
-      toast.error("Please fill in all question fields correctly.");
-    }
-  };
+  // const handleAddQuestion = async () => {
+  //   if (
+  //     editQuestionData &&
+  //     newQuestion.questionText.trim() &&
+  //     newQuestion.options.every((opt) => opt.optionText.trim()) &&
+  //     newQuestion.options.some((opt) => opt.isCorrect) &&
+  //     newQuestion.questionType
+  //   ) {
+  //     try {
+  //       await dispatch(
+  //         addQuestion({ quizId: editQuestionData.id, question: newQuestion })
+  //       ).unwrap();
+  //       toast.success("Question added successfully!");
+  //       setNewQuestion({
+  //         questionText: "",
+  //         questionType: "MCQ",
+  //         quizId: 0,
+  //         options: [
+  //           { optionText: "", isCorrect: false, optionIndex: 0 },
+  //           { optionText: "", isCorrect: false, optionIndex: 1 },
+  //           { optionText: "", isCorrect: false, optionIndex: 2 },
+  //           { optionText: "", isCorrect: false, optionIndex: 3 },
+  //         ],
+  //       });
+  //       setIsQuestionDialogOpen(false);
+  //       await dispatch(fetchQuestionsByQuizId(editQuestionData.id));
+  //     } catch (error: any) {
+  //       toast.error(error || "Failed to add question. Please try again.");
+  //     }
+  //   } else {
+  //     toast.error("Please fill in all question fields correctly.");
+  //   }
+  // };
 
-  const handleEditQuestion = async () => {
-    if (
-      editQuestionData &&
-      editQuestionData.questionText.trim() &&
-      editQuestionData.options.every((opt) => opt.optionText.trim()) &&
-      editQuestionData.options.some((opt) => opt.isCorrect) &&
-      editQuestionData.questionType
-    ) {
-      try {
-        await dispatch(
-          editQuestion({
-            questionId: editQuestionData.id,
-            question: editQuestionData,
-          })
-        ).unwrap();
-        toast.success("Question updated successfully!");
-        setIsEditQuestionDialogOpen(false);
-        if (editQuestionData) {
-          await dispatch(fetchQuestionsByQuizId(editQuestionData.id));
-        }
-      } catch (error: any) {
-        toast.error(error || "Failed to update question. Please try again.");
-      }
-    } else {
-      toast.error(
-        "Please fill in all question fields correctly and select a correct option."
-      );
-    }
-  };
+  // const handleEditQuestion = async () => {
+  //   if (
+  //     editQuestionData &&
+  //     editQuestionData.questionText.trim() &&
+  //     editQuestionData.options.every((opt) => opt.optionText.trim()) &&
+  //     editQuestionData.options.some((opt) => opt.isCorrect) &&
+  //     editQuestionData.questionType
+  //   ) {
+  //     try {
+  //       await dispatch(
+  //         editQuestion({
+  //           questionId: editQuestionData.id,
+  //           question: editQuestionData,
+  //         })
+  //       ).unwrap();
+  //       toast.success("Question updated successfully!");
+  //       setIsEditQuestionDialogOpen(false);
+  //       if (editQuestionData) {
+  //         await dispatch(fetchQuestionsByQuizId(editQuestionData.id));
+  //       }
+  //     } catch (error: any) {
+  //       toast.error(error || "Failed to update question. Please try again.");
+  //     }
+  //   } else {
+  //     toast.error(
+  //       "Please fill in all question fields correctly and select a correct option."
+  //     );
+  //   }
+  // };
 
   const allSubtopics = topics.flatMap((topic) =>
     (topic.subtopics || []).map((subtopic) => ({

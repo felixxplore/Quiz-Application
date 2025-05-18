@@ -18,15 +18,15 @@ import { useEffect } from "react";
 import { fetchUserSubmissions } from "@/store/quizSlice";
 
 // Define the TypeScript interface for submission history
-interface Submission {
-  quizId: number;
-  quizTitle: string;
-  totalQuestions: number;
-  correctAnswers: number;
-  score: number;
-  percentage: number;
-  submittedAt: string;
-}
+// interface Submission {
+//   quizId: number;
+//   quizTitle: string;
+//   totalQuestions: number;
+//   correctAnswers: number;
+//   score: number;
+//   percentage: number;
+//   submittedAt: string;
+// }
 
 // Sample data (replace with API fetch or Redux state in a real app)
 // const submissionHistory: Submission[] = [
@@ -128,9 +128,20 @@ const formatDate = (dateString: string): string => {
 
 const SubmissionHistory: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { submissionsHistory, loading, error } = useSelector(
-    (state: RootState) => state.quiz
-  );
+  const {
+    submissionsHistory,
+    //  loading, error
+  } = useSelector((state: RootState) => state.quiz as {
+    submissionsHistory: Array<{
+      quizTitle: string;
+      totalQuestions: number;
+      correctAnswers: number;
+      score: number;
+      percentage: number;
+      submittedAt: string;
+    }>;
+    // add other properties if needed
+  });
 
   useEffect(() => {
     dispatch(fetchUserSubmissions());

@@ -35,7 +35,7 @@ import {
   Pencil,
   CheckCircle,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 
 const formSchema = z.object({
@@ -75,7 +75,7 @@ const Login: React.FC = () => {
       }, 2000);
     } catch (err) {
       console.error("Login error:", err);
-      toast.error(err);
+      toast.error(err as string);
     } finally {
       setIsLoading(false);
     }

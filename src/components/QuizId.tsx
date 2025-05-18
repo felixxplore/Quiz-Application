@@ -1,5 +1,3 @@
- 
-
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,21 +42,22 @@ import {
 import { motion } from "framer-motion";
 import QuizLoader from "./QuizLoader";
 
-interface Option {
-  id: number;
-  optionText: string;
-  isCorrect: boolean;
-  optionIndex: number;
-  questionId: number;
-}
+// interface Option {
+//   id: number;
+//   optionText: string;
+//   isCorrect: boolean;
+//   optionIndex: number;
+//   questionId: number;
+// }
 
-interface Question {
-  id: number;
-  questionText: string;
-  questionType: "MCQ" | "TRUE_FALSE" | "FILL_BLANK";
-  quizId: number;
-  options: Option[];
-}
+// interface Question {
+//   id: number;
+//   questionText: string;
+//   questionType: "MCQ" | "TRUE_FALSE" | "FILL_BLANK";
+//   quizId: number;
+//   options: any[]; // Replace 'any' with 'Option' if Option interface is defined
+//   correctAnswer?: string; // Required for FILL_BLANK questions
+// }
 
 interface Quiz {
   id: number;
@@ -82,16 +81,16 @@ interface DisplayQuiz {
   ageGroup: string;
 }
 
-interface SelectedAnswer {
-  questionId: number;
-  selectedOptionId?: number;
-  fillBlankAnswer?: string;
-}
+// interface SelectedAnswer {
+//   questionId: number;
+//   selectedOptionId?: number;
+//   fillBlankAnswer?: string;
+// }
 
-interface QuizSubmissionPayload {
-  quizId: number;
-  answers: SelectedAnswer[];
-}
+// interface QuizSubmissionPayload {
+//   quizId: number;
+//   answers: SelectedAnswer[];
+// }
 
 const QuizId: React.FC = () => {
   const [quizStarted, setQuizStarted] = useState(false);
@@ -207,26 +206,21 @@ const QuizId: React.FC = () => {
     }
   };
 
-  const getSelectedAnswers = (): QuizSubmissionPayload => {
-    const answers: SelectedAnswer[] = [];
+  // Only return answers with both questionId and selectedOptionId (no fillBlankAnswer)
+  const getSelectedAnswers = (): {
+    quizId: number;
+    answers: { questionId: number; selectedOptionId: number }[];
+  } => {
+    const answers: { questionId: number; selectedOptionId: number }[] = [];
 
-    // Add MCQ/True-False answers
     Object.entries(selectedAnswers).forEach(
       ([questionId, selectedOptionId]) => {
-        answers.push({
-          questionId: Number(questionId),
-          selectedOptionId: Number(selectedOptionId),
-        });
-      }
-    );
-
-    // Add Fill-in-the-Blank answers
-    Object.entries(fillBlankAnswers).forEach(
-      ([questionId, fillBlankAnswer]) => {
-        answers.push({
-          questionId: Number(questionId),
-          fillBlankAnswer,
-        });
+        if (selectedOptionId !== undefined && selectedOptionId !== null) {
+          answers.push({
+            questionId: Number(questionId),
+            selectedOptionId: Number(selectedOptionId),
+          });
+        }
       }
     );
 
@@ -250,6 +244,18 @@ const QuizId: React.FC = () => {
     });
   };
 
+  //   const handleSubmitQuiz = () => {
+  //   const answer = getSelectedAnswers();
+  //   dispatch(submitQuiz(answer)).then((result) => {
+  //     if (submitQuiz.fulfilled.match(result)) {
+  //       setQuizCompleted(true);
+  //       setShowResults(true);
+  //       setIsSubmitDialogOpen(false);
+  //     } else if (submitQuiz.rejected.match(result)) {
+  //       console.error("Quiz submission failed:", result.error.message);
+  //     }
+  //   });
+  // };
   const calculateScore = useMemo(() => {
     if (quizSubmission) {
       return {
@@ -267,12 +273,16 @@ const QuizId: React.FC = () => {
         const correctOption = question.options.find((opt) => opt.isCorrect);
         if (
           correctOption &&
+          question.id !== undefined &&
           selectedAnswers[question.id] === correctOption.id
         ) {
           correctCount++;
         }
       } else if (question.questionType === "FILL_BLANK") {
-        const userAnswer = fillBlankAnswers[question.id]?.toLowerCase().trim();
+        const userAnswer =
+          question.id !== undefined
+            ? fillBlankAnswers[question.id]?.toLowerCase().trim()
+            : undefined;
         const correctAnswer = question.correctAnswer?.toLowerCase().trim();
         if (userAnswer && correctAnswer && userAnswer === correctAnswer) {
           correctCount++;
@@ -296,7 +306,7 @@ const QuizId: React.FC = () => {
   };
 
   if (loading) {
-    return <QuizLoader />
+    return <QuizLoader />;
   }
 
   if (error) {
@@ -339,24 +349,25 @@ const QuizId: React.FC = () => {
           transition={{ duration: 0.3 }}
           className="w-full max-w-2xl"
         >
-           
-           <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-6"
-                >
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
-                  >
-                    <Link to="/quizzes">
-                      <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
-                      <span className="   text-teal-600 hover:text-teal-700 font-medium">Back to Topics</span>
-                    </Link>
-                  </Button>
-                </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <Button
+              asChild
+              variant="outline"
+              className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <Link to="/quizzes">
+                <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
+                <span className="   text-teal-600 hover:text-teal-700 font-medium">
+                  Back to Topics
+                </span>
+              </Link>
+            </Button>
+          </motion.div>
           <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
             <CardHeader className="text-center">
               <div className="flex flex-wrap gap-2 justify-center mb-4">
@@ -395,7 +406,9 @@ const QuizId: React.FC = () => {
               <div className="grid gap-4 sm:grid-cols-2 text-gray-700">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-teal-600" />
-                  <span className="text-sm font-medium">{quizMeta.timeLimit}</span>
+                  <span className="text-sm font-medium">
+                    {quizMeta.timeLimit}
+                  </span>
                 </div>
                 <div className="flex justify-end gap-2">
                   <span className="text-sm font-medium">
@@ -429,23 +442,25 @@ const QuizId: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="w-full max-w-2xl"
         >
-           <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-6"
-                >
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
-                  >
-                    <Link to="/quizzes">
-                      <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
-                      <span className="   text-teal-600 hover:text-teal-700 font-medium">Back to Topics</span>
-                    </Link>
-                  </Button>
-                </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <Button
+              asChild
+              variant="outline"
+              className="group bg-white border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <Link to="/quizzes">
+                <ArrowLeft className="mr-2 h-5 w-5   text-teal-600 hover:text-teal-700" />
+                <span className="   text-teal-600 hover:text-teal-700 font-medium">
+                  Back to Topics
+                </span>
+              </Link>
+            </Button>
+          </motion.div>
           <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-gray-900">
@@ -465,7 +480,6 @@ const QuizId: React.FC = () => {
               <Progress
                 value={calculateScore.percentage}
                 className="h-4 rounded-full bg-gray-200"
-                indicatorClassName="bg-teal-600"
               />
               <p className="text-center text-base text-gray-600">
                 You scored {calculateScore.percentage}% on this quiz
@@ -473,7 +487,7 @@ const QuizId: React.FC = () => {
               <Separator />
               <div className="space-y-4">
                 <h3 className="font-semibold text-xl text-gray-900">
-                  Quiz Review go to History 
+                  Quiz Review go to History
                 </h3>
                 {questions.map((question, index) => (
                   <motion.div
@@ -487,14 +501,17 @@ const QuizId: React.FC = () => {
                       {question.questionType === "MCQ" ||
                       question.questionType === "TRUE_FALSE" ? (
                         question.options.find((opt) => opt.isCorrect)?.id ===
-                        Number(selectedAnswers[question.id]) ? (
+                        (typeof question.id === "number" && selectedAnswers[question.id] !== undefined
+                          ? Number(selectedAnswers[question.id])
+                          : undefined) ? (
                           <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
                         ) : (
                           <XCircle className="h-6 w-6 text-red-600 mt-0.5" />
                         )
                       ) : (
-                        (fillBlankAnswers[question.id]?.toLowerCase() ===
-                          "oop" && (
+                        (typeof question.id === "number" &&
+                          fillBlankAnswers[question.id]?.toLowerCase() ===
+                            "oop" && (
                           <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
                         )) || (
                           <XCircle className="h-6 w-6 text-red-600 mt-0.5" />
@@ -514,12 +531,10 @@ const QuizId: React.FC = () => {
                                   ? question.options.find(
                                       (opt) => opt.isCorrect
                                     )?.id ===
-                                    Number(selectedAnswers[question.id])
+                                    (typeof question.id === "number" ? Number(selectedAnswers[question.id]) : undefined)
                                     ? "text-green-600 font-semibold"
                                     : "text-red-600 font-semibold"
-                                  : fillBlankAnswers[
-                                      question.id
-                                    ]?.toLowerCase() === "oop"
+                                  : typeof question.id === "number" && selectedAnswers[question.id] !== undefined && fillBlankAnswers[selectedAnswers[question.id]]?.toLowerCase() === "oop"
                                   ? "text-green-600 font-semibold"
                                   : "text-red-600 font-semibold"
                               }
@@ -528,11 +543,14 @@ const QuizId: React.FC = () => {
                               question.questionType === "TRUE_FALSE"
                                 ? question.options.find(
                                     (opt) =>
-                                      opt.id ===
-                                      Number(selectedAnswers[question.id])
+                                      typeof question.id === "number" &&
+                                      opt.id === Number(selectedAnswers[question.id])
+                                        ? Number(selectedAnswers[question.id])
+                                        : undefined
                                   )?.optionText || "Not answered"
-                                : fillBlankAnswers[question.id] ||
-                                  "Not answered"}
+                                : (typeof question.id === "number"
+                                    ? fillBlankAnswers[question.id] || "Not answered"
+                                    : "Not answered")}
                             </span>
                           </p>
                           <p className="mt-1">
@@ -615,7 +633,6 @@ const QuizId: React.FC = () => {
         <Progress
           value={((currentQuestion + 1) / questions.length) * 100}
           className="h-4 rounded-full bg-gray-200 mb-6"
-          indicatorClassName="bg-teal-600"
         />
         <Card className="bg-white shadow-lg rounded-xl border border-gray-100">
           <CardHeader>
@@ -629,11 +646,15 @@ const QuizId: React.FC = () => {
             currentQuestionData?.questionType === "TRUE_FALSE" ? (
               <RadioGroup
                 value={
-                  selectedAnswers[currentQuestionData.id]?.toString() || ""
+                  typeof currentQuestionData?.id === "number"
+                    ? selectedAnswers[currentQuestionData.id]?.toString() || ""
+                    : ""
                 }
-                onValueChange={(value) =>
-                  handleAnswerSelect(currentQuestionData.id, Number(value))
-                }
+                onValueChange={(value) => {
+                  if (typeof currentQuestionData.id === "number") {
+                    handleAnswerSelect(currentQuestionData.id, Number(value));
+                  }
+                }}
                 className="space-y-3"
               >
                 {currentQuestionData.options.map((option) => (
@@ -643,13 +664,16 @@ const QuizId: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
                     className={`flex items-center space-x-3 rounded-lg border p-4 transition-colors ${
+                      typeof currentQuestionData.id === "number" &&
                       selectedAnswers[currentQuestionData.id] === option.id
                         ? "border-teal-500 bg-teal-50"
                         : "border-gray-200 hover:bg-gray-50"
                     }`}
                   >
                     <RadioGroupItem
-                      value={option.id.toString()}
+                      value={
+                        option.id !== undefined ? option.id.toString() : ""
+                      }
                       id={`option-${option.id}`}
                       className="text-teal-600"
                     />
@@ -670,13 +694,19 @@ const QuizId: React.FC = () => {
               >
                 <Input
                   placeholder="Enter your answer"
-                  value={fillBlankAnswers[currentQuestionData.id] || ""}
-                  onChange={(e) =>
-                    handleFillBlankChange(
-                      currentQuestionData.id,
-                      e.target.value
-                    )
+                  value={
+                    typeof currentQuestionData.id === "number"
+                      ? fillBlankAnswers[currentQuestionData.id] || ""
+                      : ""
                   }
+                  onChange={(e) => {
+                    if (typeof currentQuestionData.id === "number") {
+                      handleFillBlankChange(
+                        currentQuestionData.id,
+                        e.target.value
+                      );
+                    }
+                  }}
                   className="mt-4 border-teal-200 focus:border-teal-600 focus:ring-teal-600 rounded-lg text-lg"
                 />
               </motion.div>
@@ -684,7 +714,7 @@ const QuizId: React.FC = () => {
               <div className="text-gray-700 text-lg">Unknown question type</div>
             )}
           </CardContent>
-          <CardFooter classNameulator: flex justify-between className="flex justify-between">  
+          <CardFooter className="flex justify-between">
             <Button
               variant="outline"
               onClick={goToPreviousQuestion}

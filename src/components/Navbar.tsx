@@ -81,7 +81,9 @@ export const Navbar: React.FC = () => {
       label: "Admin",
       icon: <User className="mr-2 h-5 w-5" />,
       active: pathname === "/admin",
-      roles: ["ADMIN" , "QUIZ_CREATOR"] as Array<"USER" | "ADMIN" | "QUIZ_CREATOR">,
+      roles: ["ADMIN", "QUIZ_CREATOR"] as Array<
+        "USER" | "ADMIN" | "QUIZ_CREATOR"
+      >,
     },
     {
       to: "/profile",

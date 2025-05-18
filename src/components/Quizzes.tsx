@@ -1,31 +1,17 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useEffect } from "react";
+
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Clock, Users, BookOpen, SortAsc } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Users } from "lucide-react";
+
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import Navbar from "./Navbar";
+
 import { fetchQuizzes } from "@/store/quizSlice";
 
 const Quizzes: React.FC = () => {
-  const [search, setSearch] = useState("");
   const { quizzes } = useSelector((state: RootState) => state.quiz);
   const dispatch = useDispatch<AppDispatch>();
 

@@ -1,12 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
-import Quizzes from "./components/Quizzes";
 import Navbar from "./components/Navbar";
 import QuizId from "./components/QuizId";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
-import SubmissionHistory from "./components/SubmissionHistory";
 import AdminPanel from "./pages/AdminPanel";
 import EditQuizPage from "./pages/EditQuizPage";
 import ProfilePage from "./pages/UserProfile";
@@ -14,7 +12,6 @@ import QuizHistoryOverview from "./components/QuizHistoryOverview";
 import QuizHistory from "./components/QuizHistory";
 import TopicDetail from "./components/TopicDetails";
 import PopularTopics from "./components/PopularTopics";
-import { FeaturedQuizzes } from "./components/FeaturedQuizzes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import QuizList from "./components/QuizList";
 
@@ -36,12 +33,12 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           {/* <Route path="/history" element={<SubmissionHistory />} /> */}
           <Route path="/topics/:topicId" element={<TopicDetail />} />
-        
+
           <Route element={<ProtectedRoute />}>
             <Route
-            path="/admin/quizzes/edit/:quizId"
-            element={<EditQuizPage />}
-          />
+              path="/admin/quizzes/edit/:quizId"
+              element={<EditQuizPage />}
+            />
             <Route path="/quizzes/:quizId" element={<QuizId />} />
 
             <Route path="/history" element={<QuizHistoryOverview />} />

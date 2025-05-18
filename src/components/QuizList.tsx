@@ -1,4 +1,3 @@
- 
 import { useEffect, useState, type JSX } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -39,18 +38,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import QuizLoader from "./QuizLoader";
-
-interface Quiz {
-  id: number;
-  title: string;
-  questionCount: number;
-  difficultyLevel: string;
-  timeLimit: number;
-  topicName: string;
-  subtopicName?: string;
-  description: string;
-  participants: number;
-}
 
 interface QuizConfig {
   icon: JSX.Element;
