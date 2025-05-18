@@ -9,6 +9,7 @@ import { useEffect, type FC } from "react";
 import { useDispatch } from "react-redux";
 import { type AppDispatch } from "@/store/store";
 import { fetchQuizzes } from "@/store/quizSlice";
+import home1 from "@/assets/home1.jpeg";
 
 const Home: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -50,7 +51,7 @@ const Home: FC = () => {
             <div className="flex justify-center lg:justify-end">
               <div className="relative mr-10  w-full max-w-[500px] aspect-square rounded-lg overflow-hidden bg-muted">
                 <img
-                  src="./src/assets/home1.jpeg"
+                  src={home1}
                   alt="Students enjoying interactive quizzes"
                   className="object-cover w-full h-full"
                 />
