@@ -105,11 +105,11 @@ Quizify is a full-stack web application designed to create, manage, and take qui
      npm run dev
      ```
 
-<!-- ## API Documentation
+## API Documentation
 API documentation is being developed using **Swagger**. Once completed, it will be accessible at:
-```
-https://your-backend-url/swagger-ui/index.html
-``` -->
+
+https://quiz-application-bw4x.onrender.com/swagger-ui/index.html
+
 
 ## Testing
 Testing is planned using the following tools:
