@@ -17,7 +17,7 @@ RUN ./mvnw dependency:go-offline
 COPY src ./src
 
 # Build the app (skip tests to save time)
-RUN ./mvnw package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
 # ---------- Step 2: Run the app ----------
 FROM eclipse-temurin:21-jdk-alpine
