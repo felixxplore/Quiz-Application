@@ -5,6 +5,7 @@ import com.felix.QuizApp.model.UserEntity;
 import com.felix.QuizApp.repository.PasswordResetTokenRepository;
 import com.felix.QuizApp.repository.UserRepository;
 import com.felix.QuizApp.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/pssword-reset")
+@Tag(name="Password Reset APIs")
 public class PasswordResetController {
 
     @Autowired
