@@ -1,6 +1,6 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 
-WORKDIR /app
+WORKDIR /QuizApp-0.0.1-SNAPSHOT.jar
 
 # Copy Maven wrapper and pom.xml
 COPY .mvn .mvn
@@ -22,13 +22,13 @@ RUN ./mvnw clean package -DskipTests
 # ---------- Step 2: Run the app ----------
 FROM eclipse-temurin:21-jdk-alpine
 
-WORKDIR /app
+WORKDIR /QuizApp-0.0.1-SNAPSHOT.jar
 
 
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/*.jar QuizApp-0.0.1-SNAPSHOT.jar
 
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "QuizApp-0.0.1-SNAPSHOT.jar"]
