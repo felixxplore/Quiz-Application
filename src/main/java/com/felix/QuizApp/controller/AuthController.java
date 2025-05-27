@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
+
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Map;
 
@@ -41,10 +44,18 @@ public class AuthController {
 
 
     @GetMapping("/verify-email")
-    @Operation(summary="varify email before login")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-      return authService.verifyEmail(token);
-     }
+    @Operation(summary = "Verify email before login")
+    public RedirectView verifyEmail(@RequestParam("token") String token) throws UnsupportedEncodingException {
+        try {
+            ResponseEntity<?> response = authService.verifyEmail(token);
+            String message = response.getBody().toString();
+            return new RedirectView("https://quiz-application-bw4x.onrender.com/verify-email?status=success&message=" +
+                    java.net.URLEncoder.encode(message, "UTF-8"));
+        } catch (Exception ex) {
+            return new RedirectView("https://quiz-application-bw4x.onrender.com/verify-email?status=error&message=" +
+                    java.net.URLEncoder.encode(ex.getMessage(), "UTF-8"));
+        }
+    }
 
     @PostMapping("/forgot-password")
     @Operation(summary="generate password reset token")
