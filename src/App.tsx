@@ -14,6 +14,7 @@ import TopicDetail from "./components/TopicDetails";
 import PopularTopics from "./components/PopularTopics";
 import ProtectedRoute from "./components/ProtectedRoute";
 import QuizList from "./components/QuizList";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           {/* <Route path="/history" element={<SubmissionHistory />} /> */}
           <Route path="/topics/:topicId" element={<TopicDetail />} />
 
