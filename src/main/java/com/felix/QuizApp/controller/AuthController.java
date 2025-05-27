@@ -49,10 +49,10 @@ public class AuthController {
         try {
             ResponseEntity<?> response = authService.verifyEmail(token);
             String message = response.getBody().toString();
-            return new RedirectView("https://quiz-application-bw4x.onrender.com/verify-email?status=success&message=" +
+            return new RedirectView("https://quiz-application-arkc.vercel.app/verify-email?status=success&message=" +
                     java.net.URLEncoder.encode(message, "UTF-8"));
         } catch (Exception ex) {
-            return new RedirectView("https://quiz-application-bw4x.onrender.com/verify-email?status=error&message=" +
+            return new RedirectView("https://quiz-application-arkc.vercel.app/verify-email?status=error&message=" +
                     java.net.URLEncoder.encode(ex.getMessage(), "UTF-8"));
         }
     }
