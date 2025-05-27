@@ -179,7 +179,7 @@ public class AuthService {
 
     // 🔹 Send Email with Reset Link
      private void sendPasswordResetEmail(String email, String token) {
-        String resetUrl = "http://localhost:8080/api/auth/reset-password?token=" + token;
+        String resetUrl =  baseUrl +"/api/auth/reset-password?token=" + token;
         String subject = "Reset Your Password";
         String body = "Click the link to reset your password: " + resetUrl;
 
