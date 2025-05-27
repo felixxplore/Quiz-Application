@@ -1,10 +1,9 @@
 services:
   - type: web
     name: spring-boot-backend
-    env: java
+    env: docker # 🔥 This is the key change
     plan: free
-    buildCommand: ./mvnw clean install
-    startCommand: java -jar target/QuizAppApplication.jar
+    dockerfilePath: ./Dockerfile # (optional if your Dockerfile is in root)
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
