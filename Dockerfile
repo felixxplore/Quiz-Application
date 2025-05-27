@@ -1,34 +1,20 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
-
-WORKDIR /QuizApp-0.0.1-SNAPSHOT.jar
-
-# Copy Maven wrapper and pom.xml
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
-
-# Set execute permission for the mvnw script
-RUN chmod +x mvnw
-
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline
-
-# Copy source code
+# Use Maven to build the jar (multi-stage build)
+FROM maven:3.8.5-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
 COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Build the app (skip tests to save time)
-RUN ./mvnw clean package -DskipTests
 
-# ---------- Step 2: Run the app ----------
 FROM eclipse-temurin:21-jdk-alpine
 
-WORKDIR /QuizApp-0.0.1-SNAPSHOT.jar
+WORKDIR /app
 
 
 
-COPY --from=builder /app/target/*.jar QuizApp-0.0.1-SNAPSHOT.jar
+COPY --from=build /app/target/*.jar app.jar
 
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "QuizApp-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
