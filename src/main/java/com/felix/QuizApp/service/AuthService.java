@@ -56,7 +56,7 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
-    @Value("${app.base-url}")
+    @Value("${app.base-url:https://quiz-application-bw4x.onrender.com}")
     private String baseUrl;
 
     public void signup(SignupRequest request){
