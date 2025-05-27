@@ -12,6 +12,7 @@ import com.felix.QuizApp.model.VerificationToken;
 import com.felix.QuizApp.repository.PasswordResetTokenRepository;
 import com.felix.QuizApp.repository.UserRepository;
  import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -55,6 +56,9 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     public void signup(SignupRequest request){
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new RuntimeException("Email already in use");
@@ -83,7 +87,7 @@ public class AuthService {
      * 📧 Sends an email with a verification link containing a token.
      */
     public void sendVerificationEmail(String userEmail, String token) {
-        String verificationUrl = "http://localhost:8080/api/auth/verify-email?token=" + token;
+        String verificationUrl =  baseUrl+ "/api/auth/verify-email?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(userEmail);
