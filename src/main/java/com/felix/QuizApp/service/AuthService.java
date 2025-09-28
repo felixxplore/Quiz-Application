@@ -76,9 +76,9 @@ public class AuthService {
         userRepository.save(user);
 
         // Generate Verification Token
-        String token=verificationTokenService.generateVerificationToken(user);
+//        String token=verificationTokenService.generateVerificationToken(user);
 
-        sendVerificationEmail(user.getEmail(),token);
+//        sendVerificationEmail(user.getEmail(),token);
 
 //        System.out.println("Verification link: http://localhost:8080/api/auth/verify-email?token="+token);
     }
