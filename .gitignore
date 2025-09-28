@@ -16,9 +16,9 @@ logs/
 .env
 application.properties
 application-dev.properties
+application-prod.properties
+
 
 # OS
 .DS_Store
 Thumbs.db
-
-
