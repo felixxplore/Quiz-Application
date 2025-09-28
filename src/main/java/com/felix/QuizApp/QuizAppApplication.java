@@ -10,10 +10,15 @@ public class QuizAppApplication {
 	public static void main(String[] args) {
 
 //		// Load .env variables into System properties
+//		Dotenv dotenv = Dotenv.load();
+//		dotenv.entries().forEach(entry -> {
+//			System.setProperty(entry.getKey(), entry.getValue());
+//		});
+
+
 		Dotenv dotenv = Dotenv.configure()
 				.ignoreIfMissing()  // Key: Ignores missing .env and falls back to system env vars
 				.load();
-
 		SpringApplication.run(QuizAppApplication.class, args);
 	}
 

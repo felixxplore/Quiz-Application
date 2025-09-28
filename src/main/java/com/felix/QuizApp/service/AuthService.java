@@ -183,7 +183,7 @@ public class AuthService {
         String subject = "Reset Your Password";
         String body = "Click the link to reset your password: " + resetUrl;
 
-        emailService.sendEmail(email, subject, body);
+        emailService.sendVerificationEmail(email, token);
     }
 
     // 🔹 Reset Password
