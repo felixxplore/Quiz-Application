@@ -61,7 +61,7 @@ public class EmailService {
                 throw new RuntimeException("Failed to send email: " + response.getBody());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Email sending failed", e);
+            throw new RuntimeException("Email sending failed"+ e.getMessage());
         }
     }
 

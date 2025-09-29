@@ -59,6 +59,8 @@ public class AuthService {
     @Value("${app.base-url:https://quiz-application-bw4x.onrender.com}")
     private String baseUrl;
 
+
+    @Transactional
     public void signup(SignupRequest request){
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new RuntimeException("Email already in use");
