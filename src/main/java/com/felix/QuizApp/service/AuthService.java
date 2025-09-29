@@ -80,7 +80,7 @@ public class AuthService {
         // Generate Verification Token
         String token=verificationTokenService.generateVerificationToken(user);
 
-       emailService.sendVerificationEmail(user.getEmail(),token);
+        sendVerificationEmail(user.getEmail(),token);
 
         System.out.println("Verification link: "+baseUrl +"/api/auth/verify-email?token="+token);
     }
