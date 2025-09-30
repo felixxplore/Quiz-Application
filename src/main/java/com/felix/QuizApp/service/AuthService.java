@@ -14,7 +14,6 @@ import com.felix.QuizApp.repository.UserRepository;
  import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,8 +46,6 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JavaMailSender mailSender;
 
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
@@ -85,20 +82,20 @@ public class AuthService {
         System.out.println("Verification link: "+baseUrl +"/api/auth/verify-email?token="+token);
     }
 
-    /**
-     * 📧 Sends an email with a verification link containing a token.
-     */
-    public void sendVerificationEmail(String userEmail, String token) {
-        String verificationUrl =  baseUrl+ "/api/auth/verify-email?token=" + token;
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(userEmail);
-        message.setSubject("Verify Your Email - QuizApp");
-        message.setText("Click the link below to verify your email: \n" + verificationUrl +
-                "\n\nThis link will expire in 30 minutes.");
-
-        mailSender.send(message);
-    }
+//    /**
+//     * 📧 Sends an email with a verification link containing a token.
+//     */
+//    public void sendVerificationEmail(String userEmail, String token) {
+//        String verificationUrl =  baseUrl+ "/api/auth/verify-email?token=" + token;
+//
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo(userEmail);
+//        message.setSubject("Verify Your Email - QuizApp");
+//        message.setText("Click the link below to verify your email: \n" + verificationUrl +
+//                "\n\nThis link will expire in 30 minutes.");
+//
+//        mailSender.send(message);
+//    }
 
     public Map<String, Object> login(LoginRequest request){
 

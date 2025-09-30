@@ -8,13 +8,11 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,8 +30,6 @@ public class EmailService {
     private String fromEmail;
 
 
-    @Autowired
-    private  JavaMailSender mailSender;
     /**
      * Generic method to send any type of email (text or HTML).
      * @param to Recipient's email address
@@ -46,7 +42,22 @@ public class EmailService {
             Email from = new Email(fromEmail); // Sender email, verified in SendGrid
             Email toEmail = new Email(to);
             Content content = new Content(isHtml ? "text/html" : "text/plain", body);
-            Mail mail = new Mail(from, subject, toEmail, content);
+//            Mail mail = new Mail(from, subject, toEmail, content);
+
+            // Add BCC to sender's email
+//            mail.getPersonalization(0).addBcc(new Email(fromEmail));
+
+            // Create Mail object
+            Mail mail = new Mail();
+
+            // Create and configure Personalization
+            Personalization personalization = new Personalization();
+            personalization.addTo(toEmail);
+            personalization.addBcc(new Email(fromEmail)); // BCC to sender
+            personalization.setSubject(subject);
+            mail.addPersonalization(personalization);
+            mail.addContent(content);
+            mail.setFrom(from);
 
             SendGrid sg = new SendGrid(sendGridApiKey);
             Request request = new Request();
@@ -72,9 +83,11 @@ public class EmailService {
      */
     public void sendVerificationEmail(String userEmail, String token) {
         String subject = "Verify Your Email - QuizApp";
-        String body = "Click the link below to verify your email: \n" +
-                baseUrl + "/api/auth/verify-email?token=" + token +
-                "\n\nThis link will expire in 30 minutes.";
-        sendEmail(userEmail, subject, body, false); // Plain text email
+        String body = "<p>Hi,</p>" +
+                "<p>Please verify your QuizApp account by clicking the link below:</p>" +
+                "<p><a href=\"" + baseUrl + "/api/auth/verify-email?token=" + token + "\">Verify Email</a></p>" +
+                "<p>This link will expire in 30 minutes.</p>" +
+                "<p>Thanks,<br>QuizApp Team</p>";
+        sendEmail(userEmail, subject, body, true); // HTML email
     }
 }
